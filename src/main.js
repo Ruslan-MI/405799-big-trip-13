@@ -17,20 +17,8 @@ import {
   createEventEditTemplate
 } from "./view/event-edit.js";
 import {
-  createAddFormButtonsTemplate
-} from "./view/add-form-buttons.js";
-import {
-  createEditFormButtonsTemplate
-} from "./view/edit-form-buttons.js";
-import {
-  createEventDetailsTemplate
-} from "./view/event-details.js";
-import {
-  createOffersTemplate
-} from "./view/offers.js";
-import {
-  createDestinationTemplate
-} from "./view/destination.js";
+  createEventAddTemplate
+} from "./view/event-add.js";
 import {
   createLoadingMessageTemplate
 } from "./view/loading-message.js";
@@ -57,14 +45,6 @@ const renderTemplate = (targetTag, template, place) => {
   targetTag.insertAdjacentHTML(place, template);
 };
 
-const renderFormTemplate = (buttons) => {
-  renderTemplate(tripEventsList, createEventEditTemplate(), `beforeend`);
-
-  const eventHeader = tripEventsList.querySelector(`li:last-child .event__header`);
-
-  renderTemplate(eventHeader, buttons(), `beforeend`);
-};
-
 renderTemplate(tripMain, createTripInfoTemplate(), `afterbegin`);
 renderTemplate(tripTabsHeading, createTripTabsTemplate(), `afterend`);
 renderTemplate(tripFiltersHeading, createTripFiltersTemplate(), `afterend`);
@@ -73,17 +53,8 @@ renderTemplate(tripEvents, createTripEventsListTemplate(), `beforeend`);
 
 const tripEventsList = tripEvents.querySelector(`.trip-events__list`);
 
-renderFormTemplate(createEditFormButtonsTemplate);
-renderFormTemplate(createAddFormButtonsTemplate);
-
-const eventEdit = tripEventsList.querySelector(`.event--edit`);
-
-renderTemplate(eventEdit, createEventDetailsTemplate(), `beforeend`);
-
-const eventDetails = eventEdit.querySelector(`.event__details`);
-
-renderTemplate(eventDetails, createOffersTemplate(), `beforeend`);
-renderTemplate(eventDetails, createDestinationTemplate(), `beforeend`);
+renderTemplate(tripEventsList, createEventEditTemplate(), `beforeend`);
+renderTemplate(tripEventsList, createEventAddTemplate(), `beforeend`);
 
 for (let i = 0; i < ITEMS_COUNT; i++) {
   renderTemplate(tripEventsList, createTripEventsItemTemplate(), `beforeend`);
