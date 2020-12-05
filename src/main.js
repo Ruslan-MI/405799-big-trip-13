@@ -31,8 +31,12 @@ import {
 import {
   createStatisticsTemplate
 } from "./view/statistics.js";
+import {
+  getMockRoutePoint
+} from "./mock/routePoint.js";
 
 const ITEMS_COUNT = 3;
+const ROUTE_POINT_COUNT = 1;
 
 const pageHeader = document.querySelector(`.page-header`);
 const tripMain = pageHeader.querySelector(`.trip-main`);
@@ -40,6 +44,8 @@ const tripTabsHeading = pageHeader.querySelector(`.trip-controls h2:nth-child(1)
 const tripFiltersHeading = pageHeader.querySelector(`.trip-controls h2:nth-child(2)`);
 const pageMain = document.querySelector(`.page-main`);
 const tripEvents = pageMain.querySelector(`.trip-events`);
+
+const mockRoutePoints = new Array(ROUTE_POINT_COUNT).fill().map(getMockRoutePoint);
 
 const renderTemplate = (targetTag, template, place) => {
   targetTag.insertAdjacentHTML(place, template);
@@ -53,11 +59,11 @@ renderTemplate(tripEvents, createTripEventsListTemplate(), `beforeend`);
 
 const tripEventsList = tripEvents.querySelector(`.trip-events__list`);
 
-renderTemplate(tripEventsList, createEventEditTemplate(), `beforeend`);
+renderTemplate(tripEventsList, createEventEditTemplate(mockRoutePoints[0]), `beforeend`);
 renderTemplate(tripEventsList, createEventAddTemplate(), `beforeend`);
 
 for (let i = 0; i < ITEMS_COUNT; i++) {
-  renderTemplate(tripEventsList, createTripEventsItemTemplate(), `beforeend`);
+  renderTemplate(tripEventsList, createTripEventsItemTemplate(mockRoutePoints[0]), `beforeend`);
 }
 
 renderTemplate(tripEvents, createLoadingMessageTemplate(), `beforeend`);
