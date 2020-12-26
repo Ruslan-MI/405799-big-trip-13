@@ -66,25 +66,38 @@ const offersTypeMap = {
 };
 
 const getRandomIndex = (data) => {
-  let index = Math.floor(Math.random() * data.length);
-  return index;
+  return Math.floor(Math.random() * data.length);
 };
 
-const getRandomElements = (data, min, max) => {
-  let newArray = [];
-  let newArrayLength = Math.round(Math.random() * max) + min;
-  while (newArray.length !== newArrayLength) {
-    let randomValue = data[getRandomIndex(data)];
-    let isDuplicate = newArray.includes(randomValue);
-    if (!isDuplicate) {
-      newArray.push(randomValue);
-    }
-  }
-  return newArray;
+const getRandomLength = (data) => {
+  return data.slice(0, getRandomIndex(data));
 };
 
 const getConcatenation = ([...rows]) => {
   return `${rows.join(` `)}`;
+};
+
+const getPhotos = () => {
+  return getRandomLength(pointData.photos).map((photo) => {
+    const alt = pointData.description[getRandomIndex(pointData.description)];
+
+    return {
+      src: photo,
+      alt
+    };
+  });
+};
+
+export const eventTypes = [
+  `Taxi`, `Bus`, `Train`, `Ship`, `Transport`, `Drive`, `Flight`, `Check-in`, `Sightseeing`, `Restaurant`
+];
+
+export const offersTitleMap = {
+  luggage: `Add luggage`,
+  comfort: `Switch to comfort class`,
+  meal: `Add meal`,
+  seats: `Choose seats`,
+  train: `Travel by train`
 };
 
 export const getMockRoutePoint = () => {
@@ -93,8 +106,8 @@ export const getMockRoutePoint = () => {
     city: pointData.city[getRandomIndex(pointData.city)],
     offers: offersTypeMap[pointData.type],
     price: Math.ceil(Math.random() * 500) + 100,
-    description: getConcatenation(getRandomElements(pointData.description, 1, 5)),
-    photos: getRandomElements(pointData.photos, 1, 5),
+    description: getConcatenation(getRandomLength(pointData.description)),
+    photos: getPhotos(),
     startTime: dayjs().toDate(),
     endTime: dayjs().add((Math.ceil(Math.random() * 4)), `hour`).add((Math.ceil(Math.random() * 59)), `minute`).toDate(),
     isFavorite: getTrueOrFalse()

@@ -1,14 +1,9 @@
 import dayjs from "dayjs";
+import {
+  offersTitleMap
+} from "../mock/routePoint.js";
 
 const OFFERS_COUNT = 2;
-
-const offersTitleMap = {
-  luggage: `Add luggage`,
-  comfort: `Switch to comfort class`,
-  meal: `Add meal`,
-  seats: `Choose seats`,
-  train: `Travel by train`
-};
 
 const createEventOfferTemplates = (offers) => {
   return offers.filter((offer) => offer.isChecked).slice(0, OFFERS_COUNT).map((offer) => {
@@ -18,13 +13,6 @@ const createEventOfferTemplates = (offers) => {
   <span class="event__offer-price">${offer.price}</span>
 </li>`;
   }).join(``);
-};
-
-const getFavoriteClass = (isFavorite) => {
-  if (isFavorite) {
-    return `event__favorite-btn--active`;
-  }
-  return ``;
 };
 
 export const createTripEventsItemTemplate = (data) => {
@@ -51,7 +39,7 @@ export const createTripEventsItemTemplate = (data) => {
     <ul class="event__selected-offers">
   ${createEventOfferTemplates(data.offers)}
     </ul>
-    <button class="event__favorite-btn ${getFavoriteClass(data.isFavorite)}" type="button">
+    <button class="event__favorite-btn ${data.isFavorite ? `event__favorite-btn--active` : ``}" type="button">
       <span class="visually-hidden">Add to favorite</span>
       <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
         <path

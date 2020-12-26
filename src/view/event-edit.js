@@ -1,16 +1,8 @@
 import dayjs from "dayjs";
-
-const eventTypes = [
-  `Taxi`, `Bus`, `Train`, `Ship`, `Transport`, `Drive`, `Flight`, `Check-in`, `Sightseeing`, `Restaurant`
-];
-
-const offersTitleMap = {
-  luggage: `Add luggage`,
-  comfort: `Switch to comfort class`,
-  meal: `Add meal`,
-  seats: `Choose seats`,
-  train: `Travel by train`
-};
+import {
+  eventTypes,
+  offersTitleMap
+} from "../mock/routePoint.js";
 
 const getCheckedPoint = (dataPoint, point) => {
   if (dataPoint === point) {
@@ -23,7 +15,7 @@ const getCheckedPoint = (dataPoint, point) => {
 const createEventTypeItemTemplates = (data) => {
   return eventTypes.map((type) => {
     return `<div class="event__type-item">
-    <input id="event-type-taxi${type.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type"
+    <input id="event-type-${type.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type"
       value="${type.toLowerCase()}" ${getCheckedPoint(data.type, type)}>
     <label class="event__type-label  event__type-label--${type.toLowerCase()}" for="event-type-${type.toLowerCase()}-1">${type}</label>
   </div>`;
@@ -41,6 +33,29 @@ const createEventOfferSelectorTemplate = (data) => {
     <span class="event__offer-price">${offer.price}</span>
   </label>
 </div>`;
+  }).join(``);
+};
+
+const createEventSectionDestinationTemplate = (data) => {
+  if (data.description || data.photos.length > 0) {
+    return `<section class="event__section  event__section--destination">
+    <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+    ${data.description ? `<p class="event__destination-description">${data.description}</p>` : ``}
+
+    ${data.photos.length > 0 ? `<div class="event__photos-container">
+    <div class="event__photos-tape">
+      ${createEventPhotoTemplate(data)}
+    </div>
+  </div>` : ``}
+
+  </section>`;
+  }
+  return ``;
+};
+
+const createEventPhotoTemplate = (data) => {
+  return data.photos.map((photo) => {
+    return `<img class="event__photo" src="${photo.src}" alt="${photo.alt}">`;
   }).join(``);
 };
 
@@ -109,10 +124,8 @@ export const createEventEditTemplate = (data) => {
         </div>
       </section>
 
-      <section class="event__section  event__section--destination">
-        <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-        <p class="event__destination-description">${data.description}</p>
-      </section>
+      ${createEventSectionDestinationTemplate(data)}
+
     </section>
   </form>
 </li>`;
