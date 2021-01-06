@@ -1,5 +1,8 @@
 import dayjs from "dayjs";
 import {
+  createElement
+} from "../utils.js";
+import {
   offersTitleMap
 } from "../mock/routePoint.js";
 
@@ -15,7 +18,7 @@ const createEventOfferTemplates = (offers) => {
   }).join(``);
 };
 
-export const createTripEventsItemTemplate = (data) => {
+const createTripEventsItemTemplate = (data) => {
   return `<li class="trip-events__item">
   <div class="event">
     <time class="event__date"
@@ -52,3 +55,26 @@ export const createTripEventsItemTemplate = (data) => {
   </div>
 </li>`;
 };
+
+export default class TripEventsItem {
+  constructor(routePoint) {
+    this._element = null;
+    this._routePoint = routePoint;
+  }
+
+  getTemplate() {
+    return createTripEventsItemTemplate(this._routePoint);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

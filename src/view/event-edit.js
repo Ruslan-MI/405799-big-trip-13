@@ -1,5 +1,8 @@
 import dayjs from "dayjs";
 import {
+  createElement
+} from "../utils.js";
+import {
   eventTypes,
   offersTitleMap
 } from "../mock/routePoint.js";
@@ -59,7 +62,7 @@ const createEventPhotoTemplate = (data) => {
   }).join(``);
 };
 
-export const createEventEditTemplate = (data) => {
+const createEventEditTemplate = (data) => {
   return `<li class="trip-events__item">
   <form class="event event--edit" action="#" method="post">
     <header class="event__header">
@@ -130,3 +133,26 @@ export const createEventEditTemplate = (data) => {
   </form>
 </li>`;
 };
+
+export default class EventEdit {
+  constructor(routePoint) {
+    this._element = null;
+    this._routePoint = routePoint;
+  }
+
+  getTemplate() {
+    return createEventEditTemplate(this._routePoint);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
