@@ -1,6 +1,4 @@
-import {
-  createElement
-} from "../utils.js";
+import Abstract from "./abstract.js";
 
 const createTripInfoTemplate = (cities, cost) => {
   return `<section class="trip-main__trip-info  trip-info">
@@ -16,26 +14,28 @@ const createTripInfoTemplate = (cities, cost) => {
 </section>`;
 };
 
-export default class TripInfo {
-  constructor(routeCities, routeCost) {
-    this._element = null;
-    this._routeCities = routeCities;
-    this._routeCost = routeCost;
+export default class TripInfo extends Abstract {
+  constructor(routePoints) {
+    super();
+    this._routeCities = this._getRouteCities(routePoints);
+    this._routeCost = this._getRouteCost(routePoints);
+  }
+
+  _getRouteCities(routePoints) {
+    return Array.from(new Set(routePoints.map((point) => {
+      return point.city;
+    })));
+  }
+
+  _getRouteCost(routePoints) {
+    return routePoints.map((point) => {
+      return point.price;
+    }).reduce((a, b) => {
+      return a + b;
+    });
   }
 
   getTemplate() {
     return createTripInfoTemplate(this._routeCities, this._routeCost);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

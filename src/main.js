@@ -1,6 +1,6 @@
 import {
-  render, RenderPosition
-} from "./utils.js";
+  render, replace, RenderPosition
+} from "./utils/dom-actions.js";
 import TripInfoView from "./view/trip-info.js";
 import TripTabsView from "./view/trip-tabs.js";
 import TripFiltersView from "./view/trip-filters.js";
@@ -25,20 +25,16 @@ const tripEvents = pageMain.querySelector(`.trip-events`);
 
 const routePoints = new Array(MOCK_ROUTE_POINTS_COUNT).fill().map(getMockRoutePoint);
 
-const routeCities = Array.from(new Set(routePoints.map((point) => {
-  return point.city;
-})));
-
 const renderEvents = (eventsListElement, routePoint) => {
   const itemComponent = new TripEventsItemView(routePoint);
   const editFormComponent = new EventEditView(routePoint);
 
   const replaceItemToEditForm = () => {
-    eventsListElement.replaceChild(editFormComponent.getElement(), itemComponent.getElement());
+    replace(editFormComponent, itemComponent);
   };
 
   const replaceEditFormToItem = () => {
-    eventsListElement.replaceChild(itemComponent.getElement(), editFormComponent.getElement());
+    replace(itemComponent, editFormComponent);
   };
 
   const onEscKeyDown = (evt) => {
@@ -49,45 +45,39 @@ const renderEvents = (eventsListElement, routePoint) => {
     }
   };
 
-  itemComponent.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, () => {
+  itemComponent.setRollupClickHandler(() => {
     replaceItemToEditForm();
     document.addEventListener(`keydown`, onEscKeyDown);
   });
 
-  editFormComponent.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, () => {
+  editFormComponent.setRollupClickHandler(() => {
     replaceEditFormToItem();
     document.removeEventListener(`keydown`, onEscKeyDown);
   });
 
-  editFormComponent.getElement().querySelector(`.event--edit`).addEventListener(`submit`, (evt) => {
-    evt.preventDefault();
+  editFormComponent.setEditSubmitHandler(() => {
     replaceEditFormToItem();
     document.removeEventListener(`keydown`, onEscKeyDown);
   });
 
-  render(eventsListElement, itemComponent.getElement(), RenderPosition.BEFOREEND);
+  render(eventsListElement, itemComponent, RenderPosition.BEFOREEND);
 };
 
-render(tripTabsHeading, new TripTabsView().getElement(), RenderPosition.AFTEREND);
-render(tripFiltersHeading, new TripFiltersView().getElement(), RenderPosition.AFTEREND);
+render(tripTabsHeading, new TripTabsView(), RenderPosition.AFTEREND);
+render(tripFiltersHeading, new TripFiltersView(), RenderPosition.AFTEREND);
 
 const renderTrip = (tripInfoContainer, tripGeneralContainer) => {
   if (Math.min(MAX_ITEMS_COUNT, routePoints.length) === 0) {
-    render(tripGeneralContainer, new EmptyListMessageView().getElement(), RenderPosition.BEFOREEND);
+    render(tripGeneralContainer, new EmptyListMessageView(), RenderPosition.BEFOREEND);
   } else {
     const tripEventsListComponent = new TripEventsListView();
-    const routeCost = routePoints.map((point) => {
-      return point.price;
-    }).reduce((a, b) => {
-      return a + b;
-    });
 
-    render(tripInfoContainer, new TripInfoView(routeCities, routeCost).getElement(), RenderPosition.AFTERBEGIN);
-    render(tripGeneralContainer, new TripSortView().getElement(), RenderPosition.BEFOREEND);
-    render(tripGeneralContainer, tripEventsListComponent.getElement(), RenderPosition.BEFOREEND);
+    render(tripInfoContainer, new TripInfoView(routePoints), RenderPosition.AFTERBEGIN);
+    render(tripGeneralContainer, new TripSortView(), RenderPosition.BEFOREEND);
+    render(tripGeneralContainer, tripEventsListComponent, RenderPosition.BEFOREEND);
 
     routePoints.slice(0, Math.min(MAX_ITEMS_COUNT, routePoints.length)).forEach((point) => {
-      renderEvents(tripEventsListComponent.getElement(), point);
+      renderEvents(tripEventsListComponent, point);
     });
   }
 };
