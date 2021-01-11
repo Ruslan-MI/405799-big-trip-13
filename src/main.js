@@ -71,21 +71,25 @@ const renderEvents = (eventsListElement, routePoint) => {
 render(tripTabsHeading, new TripTabsView().getElement(), RenderPosition.AFTEREND);
 render(tripFiltersHeading, new TripFiltersView().getElement(), RenderPosition.AFTEREND);
 
-if (Math.min(MAX_ITEMS_COUNT, routePoints.length) === 0) {
-  render(tripEvents, new EmptyListMessageView().getElement(), RenderPosition.BEFOREEND);
-} else {
-  const tripEventsListComponent = new TripEventsListView();
-  const routeCost = routePoints.map((point) => {
-    return point.price;
-  }).reduce((a, b) => {
-    return a + b;
-  });
+const renderTrip = (tripInfoContainer, tripGeneralContainer) => {
+  if (Math.min(MAX_ITEMS_COUNT, routePoints.length) === 0) {
+    render(tripGeneralContainer, new EmptyListMessageView().getElement(), RenderPosition.BEFOREEND);
+  } else {
+    const tripEventsListComponent = new TripEventsListView();
+    const routeCost = routePoints.map((point) => {
+      return point.price;
+    }).reduce((a, b) => {
+      return a + b;
+    });
 
-  render(tripMain, new TripInfoView(routeCities, routeCost).getElement(), RenderPosition.AFTERBEGIN);
-  render(tripEvents, new TripSortView().getElement(), RenderPosition.BEFOREEND);
-  render(tripEvents, tripEventsListComponent.getElement(), RenderPosition.BEFOREEND);
+    render(tripInfoContainer, new TripInfoView(routeCities, routeCost).getElement(), RenderPosition.AFTERBEGIN);
+    render(tripGeneralContainer, new TripSortView().getElement(), RenderPosition.BEFOREEND);
+    render(tripGeneralContainer, tripEventsListComponent.getElement(), RenderPosition.BEFOREEND);
 
-  routePoints.slice(0, Math.min(MAX_ITEMS_COUNT, routePoints.length)).forEach((point) => {
-    renderEvents(tripEventsListComponent.getElement(), point);
-  });
-}
+    routePoints.slice(0, Math.min(MAX_ITEMS_COUNT, routePoints.length)).forEach((point) => {
+      renderEvents(tripEventsListComponent.getElement(), point);
+    });
+  }
+};
+
+renderTrip(tripMain, tripEvents);
