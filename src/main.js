@@ -1,30 +1,20 @@
 import {
-  createTripInfoTemplate
-} from "./view/trip-info.js";
-import {
-  createTripTabsTemplate
-} from "./view/trip-tabs.js";
-import {
-  createTripFiltersTemplate
-} from "./view/trip-filters.js";
-import {
-  createTripSortTemplate
-} from "./view/trip-sort.js";
-import {
-  createTripEventsListTemplate
-} from "./view/trip-events-list.js";
-import {
-  createEventEditTemplate
-} from "./view/event-edit.js";
-import {
-  createTripEventsItemTemplate
-} from "./view/trip-events-item.js";
+  render, RenderPosition
+} from "./utils.js";
+import TripInfoView from "./view/trip-info.js";
+import TripTabsView from "./view/trip-tabs.js";
+import TripFiltersView from "./view/trip-filters.js";
+import TripSortView from "./view/trip-sort.js";
+import TripEventsListView from "./view/trip-events-list.js";
+import EventEditView from "./view/event-edit.js";
+import TripEventsItemView from "./view/trip-events-item.js";
+import EmptyListMessageView from "./view/empty-list-message.js";
 import {
   getMockRoutePoint
 } from "./mock/routePoint.js";
 
-const ITEMS_COUNT = 3;
-const ROUTE_POINT_COUNT = 20;
+const MAX_ITEMS_COUNT = 3;
+const MOCK_ROUTE_POINTS_COUNT = 20;
 
 const pageHeader = document.querySelector(`.page-header`);
 const tripMain = pageHeader.querySelector(`.trip-main`);
@@ -33,32 +23,73 @@ const tripFiltersHeading = pageHeader.querySelector(`.trip-controls h2:nth-child
 const pageMain = document.querySelector(`.page-main`);
 const tripEvents = pageMain.querySelector(`.trip-events`);
 
-const mockRoutePoints = new Array(ROUTE_POINT_COUNT).fill().map(getMockRoutePoint);
+const routePoints = new Array(MOCK_ROUTE_POINTS_COUNT).fill().map(getMockRoutePoint);
 
-const mockRouteCities = Array.from(new Set(mockRoutePoints.map((point) => {
+const routeCities = Array.from(new Set(routePoints.map((point) => {
   return point.city;
 })));
 
-const mockRouteCost = mockRoutePoints.map((point) => {
-  return point.price;
-}).reduce((a, b) => {
-  return a + b;
-});
+const renderEvents = (eventsListElement, routePoint) => {
+  const itemComponent = new TripEventsItemView(routePoint);
+  const editFormComponent = new EventEditView(routePoint);
 
-const renderTemplate = (targetTag, template, place) => {
-  targetTag.insertAdjacentHTML(place, template);
+  const replaceItemToEditForm = () => {
+    eventsListElement.replaceChild(editFormComponent.getElement(), itemComponent.getElement());
+  };
+
+  const replaceEditFormToItem = () => {
+    eventsListElement.replaceChild(itemComponent.getElement(), editFormComponent.getElement());
+  };
+
+  const onEscKeyDown = (evt) => {
+    if (evt.key === `Escape` || evt.key === `Esc`) {
+      evt.preventDefault();
+      replaceEditFormToItem();
+      document.removeEventListener(`keydown`, onEscKeyDown);
+    }
+  };
+
+  itemComponent.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, () => {
+    replaceItemToEditForm();
+    document.addEventListener(`keydown`, onEscKeyDown);
+  });
+
+  editFormComponent.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, () => {
+    replaceEditFormToItem();
+    document.removeEventListener(`keydown`, onEscKeyDown);
+  });
+
+  editFormComponent.getElement().querySelector(`.event--edit`).addEventListener(`submit`, (evt) => {
+    evt.preventDefault();
+    replaceEditFormToItem();
+    document.removeEventListener(`keydown`, onEscKeyDown);
+  });
+
+  render(eventsListElement, itemComponent.getElement(), RenderPosition.BEFOREEND);
 };
 
-renderTemplate(tripMain, createTripInfoTemplate(mockRouteCities, mockRouteCost), `afterbegin`);
-renderTemplate(tripTabsHeading, createTripTabsTemplate(), `afterend`);
-renderTemplate(tripFiltersHeading, createTripFiltersTemplate(), `afterend`);
-renderTemplate(tripEvents, createTripSortTemplate(), `beforeend`);
-renderTemplate(tripEvents, createTripEventsListTemplate(), `beforeend`);
+render(tripTabsHeading, new TripTabsView().getElement(), RenderPosition.AFTEREND);
+render(tripFiltersHeading, new TripFiltersView().getElement(), RenderPosition.AFTEREND);
 
-const tripEventsList = tripEvents.querySelector(`.trip-events__list`);
+const renderTrip = (tripInfoContainer, tripGeneralContainer) => {
+  if (Math.min(MAX_ITEMS_COUNT, routePoints.length) === 0) {
+    render(tripGeneralContainer, new EmptyListMessageView().getElement(), RenderPosition.BEFOREEND);
+  } else {
+    const tripEventsListComponent = new TripEventsListView();
+    const routeCost = routePoints.map((point) => {
+      return point.price;
+    }).reduce((a, b) => {
+      return a + b;
+    });
 
-renderTemplate(tripEventsList, createEventEditTemplate(mockRoutePoints[0]), `beforeend`);
+    render(tripInfoContainer, new TripInfoView(routeCities, routeCost).getElement(), RenderPosition.AFTERBEGIN);
+    render(tripGeneralContainer, new TripSortView().getElement(), RenderPosition.BEFOREEND);
+    render(tripGeneralContainer, tripEventsListComponent.getElement(), RenderPosition.BEFOREEND);
 
-for (let i = 0; i < ITEMS_COUNT; i++) {
-  renderTemplate(tripEventsList, createTripEventsItemTemplate(mockRoutePoints[i]), `beforeend`);
-}
+    routePoints.slice(0, Math.min(MAX_ITEMS_COUNT, routePoints.length)).forEach((point) => {
+      renderEvents(tripEventsListComponent.getElement(), point);
+    });
+  }
+};
+
+renderTrip(tripMain, tripEvents);
