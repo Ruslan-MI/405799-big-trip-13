@@ -1,10 +1,8 @@
 import dayjs from "dayjs";
 import {
-  createElement
-} from "../utils.js";
-import {
   offersTitleMap
 } from "../mock/routePoint.js";
+import Abstract from "./abstract.js";
 
 const OFFERS_COUNT = 2;
 
@@ -56,25 +54,23 @@ const createTripEventsItemTemplate = (data) => {
 </li>`;
 };
 
-export default class TripEventsItem {
+export default class TripEventsItem extends Abstract {
   constructor(routePoint) {
-    this._element = null;
+    super();
     this._routePoint = routePoint;
+    this._rollupClickHandler = this._rollupClickHandler.bind(this);
+  }
+
+  _rollupClickHandler() {
+    this._callback.rollupClick();
   }
 
   getTemplate() {
     return createTripEventsItemTemplate(this._routePoint);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
+  setRollupClickHandler(callback) {
+    this._callback.rollupClick = callback;
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._rollupClickHandler);
   }
 }

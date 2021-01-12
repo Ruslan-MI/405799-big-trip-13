@@ -1,11 +1,9 @@
 import dayjs from "dayjs";
 import {
-  createElement
-} from "../utils.js";
-import {
   eventTypes,
   offersTitleMap
 } from "../mock/routePoint.js";
+import Abstract from "./abstract.js";
 
 const getCheckedPoint = (dataPoint, point) => {
   if (dataPoint === point) {
@@ -134,25 +132,34 @@ const createEventEditTemplate = (data) => {
 </li>`;
 };
 
-export default class EventEdit {
+export default class EventEdit extends Abstract {
   constructor(routePoint) {
-    this._element = null;
+    super();
     this._routePoint = routePoint;
+    this._rollupClickHandler = this._rollupClickHandler.bind(this);
+    this._editSubmitHandler = this._editSubmitHandler.bind(this);
+  }
+
+  _rollupClickHandler() {
+    this._callback.rollupClick();
+  }
+
+  _editSubmitHandler(evt) {
+    evt.preventDefault();
+    this._callback.editSubmit();
   }
 
   getTemplate() {
     return createEventEditTemplate(this._routePoint);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
+  setRollupClickHandler(callback) {
+    this._callback.rollupClick = callback;
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._rollupClickHandler);
   }
 
-  removeElement() {
-    this._element = null;
+  setEditSubmitHandler(callback) {
+    this._callback.editSubmit = callback;
+    this.getElement().querySelector(`.event--edit`).addEventListener(`submit`, this._editSubmitHandler);
   }
 }
