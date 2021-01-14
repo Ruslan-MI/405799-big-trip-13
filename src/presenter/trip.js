@@ -20,7 +20,8 @@ export default class Trip {
     this._eventPresenters = {};
 
     this._updateRoutePoint = this._updateRoutePoint.bind(this);
-    this._modeChangeHandler = this._modeChangeHandler.bind(this);
+    this._changeModeHandler = this._changeModeHandler.bind(this);
+    this._changeSortType = this._changeSortType.bind(this);
   }
 
   _renderEmptyListMessage() {
@@ -39,6 +40,8 @@ export default class Trip {
     this._tripSortComponent = new TripSortView();
 
     render(this._generalContainer, this._tripSortComponent, RenderPosition.BEFOREEND);
+
+    this._tripSortComponent.setSortTypeChangeHandler(this._changeSortType);
   }
 
   _renderEventList() {
@@ -48,7 +51,7 @@ export default class Trip {
   }
 
   _renderEvent(routePoint) {
-    const eventPresenter = new EventPresenter(this._eventListComponent, this._updateRoutePoint, this._modeChangeHandler);
+    const eventPresenter = new EventPresenter(this._eventListComponent, this._updateRoutePoint, this._changeModeHandler);
 
     this._eventPresenters[routePoint.id] = eventPresenter;
 
@@ -81,8 +84,12 @@ export default class Trip {
     this._eventPresenters = {};
   }
 
-  _modeChangeHandler() {
+  _changeModeHandler() {
     Object.values(this._eventPresenters).forEach((presenter) => presenter.resetView());
+  }
+
+  _changeSortType() {
+    // console.log(`change`);
   }
 
   start(routePoints) {

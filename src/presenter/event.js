@@ -10,10 +10,10 @@ const Mode = {
 };
 
 export default class Event {
-  constructor(eventListComponent, updateRoutePoint, modeChangeHandler) {
+  constructor(eventListComponent, updateRoutePoint, changeModeHandler) {
     this._eventListComponent = eventListComponent;
     this._updateRoutePoint = updateRoutePoint;
-    this._modeChangeHandler = modeChangeHandler;
+    this._changeModeHandler = changeModeHandler;
 
     this._eventItemComponent = null;
     this._eventEditComponent = null;
@@ -29,7 +29,7 @@ export default class Event {
   _eventItemRollupClickHandler() {
     replace(this._eventEditComponent, this._eventItemComponent);
     document.addEventListener(`keydown`, this._EscKeyDownHandler);
-    this._modeChangeHandler();
+    this._changeModeHandler();
     this._mode = Mode.EDITING;
   }
 
