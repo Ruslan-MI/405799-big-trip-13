@@ -54,15 +54,20 @@ const createTripEventsItemTemplate = (data) => {
 </li>`;
 };
 
-export default class TripEventsItem extends Abstract {
+export default class EventItem extends Abstract {
   constructor(routePoint) {
     super();
     this._routePoint = routePoint;
     this._rollupClickHandler = this._rollupClickHandler.bind(this);
+    this._favoriteClickHandler = this._favoriteClickHandler.bind(this);
   }
 
   _rollupClickHandler() {
     this._callback.rollupClick();
+  }
+
+  _favoriteClickHandler() {
+    this._callback.favoriteClick();
   }
 
   getTemplate() {
@@ -72,5 +77,10 @@ export default class TripEventsItem extends Abstract {
   setRollupClickHandler(callback) {
     this._callback.rollupClick = callback;
     this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._rollupClickHandler);
+  }
+
+  setFavoriteClickHandler(callback) {
+    this._callback.favoriteClick = callback;
+    this.getElement().querySelector(`.event__favorite-btn`).addEventListener(`click`, this._favoriteClickHandler);
   }
 }
