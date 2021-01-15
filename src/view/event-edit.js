@@ -146,7 +146,7 @@ export default class EventEdit extends Abstract {
 
   _editSubmitHandler(evt) {
     evt.preventDefault();
-    this._callback.editSubmit();
+    this._callback.editSubmit(this._routePoint);
   }
 
   getTemplate() {

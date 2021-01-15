@@ -102,6 +102,7 @@ export const offersTitleMap = {
 
 export const getMockRoutePoint = () => {
   return {
+    id: (Math.floor(Math.random() * 100000)),
     type: pointData.type[0],
     city: pointData.city[getRandomIndex(pointData.city)],
     offers: offersTypeMap[pointData.type],
