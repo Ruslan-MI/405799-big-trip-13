@@ -26,36 +26,7 @@ export default class Event {
     this._editSubmitHandler = this._editSubmitHandler.bind(this);
   }
 
-  _eventItemRollupClickHandler() {
-    replace(this._eventEditComponent, this._eventItemComponent);
-    document.addEventListener(`keydown`, this._EscKeyDownHandler);
-    this._changeModeHandler();
-    this._mode = Mode.EDITING;
-  }
-
-  _eventEditRollupClickHandler() {
-    replace(this._eventItemComponent, this._eventEditComponent);
-    document.removeEventListener(`keydown`, this._EscKeyDownHandler);
-    this._mode = Mode.DEFAULT;
-  }
-
-  _EscKeyDownHandler(evt) {
-    if (evt.key === `Escape` || evt.key === `Esc`) {
-      evt.preventDefault();
-      this._eventEditRollupClickHandler();
-    }
-  }
-
-  _favoriteClickHandler() {
-    this._updateRoutePoint(Object.assign({}, this._routePoint, {isFavorite: !this._routePoint.isFavorite}));
-  }
-
-  _editSubmitHandler(changedRoutePoint) {
-    this._updateRoutePoint(changedRoutePoint);
-    this._eventEditRollupClickHandler();
-  }
-
-  start(routePoint) {
+  init(routePoint) {
     this._routePoint = routePoint;
 
     const createdEventItemComponent = this._eventItemComponent;
@@ -95,5 +66,34 @@ export default class Event {
     if (this._mode !== Mode.DEFAULT) {
       this._eventEditRollupClickHandler();
     }
+  }
+
+  _eventItemRollupClickHandler() {
+    replace(this._eventEditComponent, this._eventItemComponent);
+    document.addEventListener(`keydown`, this._EscKeyDownHandler);
+    this._changeModeHandler();
+    this._mode = Mode.EDITING;
+  }
+
+  _eventEditRollupClickHandler() {
+    replace(this._eventItemComponent, this._eventEditComponent);
+    document.removeEventListener(`keydown`, this._EscKeyDownHandler);
+    this._mode = Mode.DEFAULT;
+  }
+
+  _EscKeyDownHandler(evt) {
+    if (evt.key === `Escape` || evt.key === `Esc`) {
+      evt.preventDefault();
+      this._eventEditRollupClickHandler();
+    }
+  }
+
+  _favoriteClickHandler() {
+    this._updateRoutePoint(Object.assign({}, this._routePoint, {isFavorite: !this._routePoint.isFavorite}));
+  }
+
+  _editSubmitHandler(changedRoutePoint) {
+    this._updateRoutePoint(changedRoutePoint);
+    this._eventEditRollupClickHandler();
   }
 }

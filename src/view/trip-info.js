@@ -21,6 +21,10 @@ export default class TripInfo extends Abstract {
     this._routeCost = this._getRouteCost(routePoints);
   }
 
+  getTemplate() {
+    return createTripInfoTemplate(this._routeCities, this._routeCost);
+  }
+
   _getRouteCities(routePoints) {
     return Array.from(new Set(routePoints.map((point) => {
       return point.city;
@@ -33,9 +37,5 @@ export default class TripInfo extends Abstract {
     }).reduce((a, b) => {
       return a + b;
     });
-  }
-
-  getTemplate() {
-    return createTripInfoTemplate(this._routeCities, this._routeCost);
   }
 }
