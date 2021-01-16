@@ -140,15 +140,6 @@ export default class EventEdit extends Abstract {
     this._editSubmitHandler = this._editSubmitHandler.bind(this);
   }
 
-  _rollupClickHandler() {
-    this._callback.rollupClick();
-  }
-
-  _editSubmitHandler(evt) {
-    evt.preventDefault();
-    this._callback.editSubmit(this._routePoint);
-  }
-
   getTemplate() {
     return createEventEditTemplate(this._routePoint);
   }
@@ -161,5 +152,14 @@ export default class EventEdit extends Abstract {
   setEditSubmitHandler(callback) {
     this._callback.editSubmit = callback;
     this.getElement().querySelector(`.event--edit`).addEventListener(`submit`, this._editSubmitHandler);
+  }
+
+  _rollupClickHandler() {
+    this._callback.rollupClick();
+  }
+
+  _editSubmitHandler(evt) {
+    evt.preventDefault();
+    this._callback.editSubmit(this._routePoint);
   }
 }

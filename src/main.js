@@ -25,4 +25,4 @@ render(tripFiltersHeading, new TripFiltersView(), RenderPosition.AFTEREND);
 
 const tripPresenter = new TripPresenter(tripMain, tripEvents);
 
-tripPresenter.start(routePoints);
+tripPresenter.init(routePoints);

@@ -5,6 +5,14 @@ import {
 import {
   updateItem
 } from "../utils/common.js";
+import {
+  SortType
+} from "../view/trip-sort.js";
+import {
+  sortDay,
+  sortTime,
+  sortPrice
+} from "../utils/common.js";
 import TripInfoView from "../view/trip-info.js";
 import TripSortView from "../view/trip-sort.js";
 import EventListView from "../view/trip-events-list.js";
@@ -18,10 +26,23 @@ export default class Trip {
     this._infoContainer = tripInfoContainer;
     this._generalContainer = tripGeneralContainer;
     this._eventPresenters = {};
+    this._defaultSortType = SortType.DAY;
 
     this._updateRoutePoint = this._updateRoutePoint.bind(this);
     this._changeModeHandler = this._changeModeHandler.bind(this);
     this._changeSortType = this._changeSortType.bind(this);
+  }
+
+  init(routePoints) {
+    this._sourcedRoutePoints = routePoints.slice(0, Math.min(MAX_ITEMS_COUNT, routePoints.length));
+    this._routePoints = routePoints.slice(0, Math.min(MAX_ITEMS_COUNT, routePoints.length));
+    this._sortRoutePoints(this._defaultSortType);
+
+    if (this._routePoints.length === 0) {
+      this._renderEmptyListMessage();
+    } else {
+      this._renderTrip();
+    }
   }
 
   _renderEmptyListMessage() {
@@ -55,7 +76,7 @@ export default class Trip {
 
     this._eventPresenters[routePoint.id] = eventPresenter;
 
-    eventPresenter.start(routePoint);
+    eventPresenter.init(routePoint);
   }
 
   _renderEvents() {
@@ -73,7 +94,7 @@ export default class Trip {
 
   _updateRoutePoint(changedRoutePoint) {
     this._routePoints = updateItem(this._routePoints, changedRoutePoint);
-    this._eventPresenters[changedRoutePoint.id].start(changedRoutePoint);
+    this._eventPresenters[changedRoutePoint.id].init(changedRoutePoint);
   }
 
   _clearEvents() {
@@ -88,17 +109,23 @@ export default class Trip {
     Object.values(this._eventPresenters).forEach((presenter) => presenter.resetView());
   }
 
-  _changeSortType() {
-    // console.log(`change`);
+  _sortRoutePoints(sortType) {
+    switch (sortType) {
+      case SortType.DAY:
+        this._routePoints.sort(sortDay);
+        break;
+      case SortType.TIME:
+        this._routePoints.sort(sortTime);
+        break;
+      case SortType.PRICE:
+        this._routePoints.sort(sortPrice);
+        break;
+    }
   }
 
-  start(routePoints) {
-    this._routePoints = routePoints.slice(0, Math.min(MAX_ITEMS_COUNT, routePoints.length));
-
-    if (this._routePoints.length === 0) {
-      this._renderEmptyListMessage();
-    } else {
-      this._renderTrip();
-    }
+  _changeSortType(sortType) {
+    this._sortRoutePoints(sortType);
+    this._clearEvents();
+    this._renderEvents();
   }
 }

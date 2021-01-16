@@ -62,14 +62,6 @@ export default class EventItem extends Abstract {
     this._favoriteClickHandler = this._favoriteClickHandler.bind(this);
   }
 
-  _rollupClickHandler() {
-    this._callback.rollupClick();
-  }
-
-  _favoriteClickHandler() {
-    this._callback.favoriteClick();
-  }
-
   getTemplate() {
     return createTripEventsItemTemplate(this._routePoint);
   }
@@ -82,5 +74,13 @@ export default class EventItem extends Abstract {
   setFavoriteClickHandler(callback) {
     this._callback.favoriteClick = callback;
     this.getElement().querySelector(`.event__favorite-btn`).addEventListener(`click`, this._favoriteClickHandler);
+  }
+
+  _rollupClickHandler() {
+    this._callback.rollupClick();
+  }
+
+  _favoriteClickHandler() {
+    this._callback.favoriteClick();
   }
 }
