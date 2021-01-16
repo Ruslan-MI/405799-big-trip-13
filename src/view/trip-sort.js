@@ -8,35 +8,35 @@ export const SortType = {
   OFFER: `Offer`
 };
 
-const defaultType = `Day`;
-
 const disabledTypes = [`Event`, `Offer`];
 
-const createTripSortItemTemplates = () => {
+const createTripSortItemTemplates = (defaultSortType) => {
   return Object.values(SortType).map((type) => {
     return `<div class="trip-sort__item  trip-sort__item--${type.toLowerCase()}">
     <input id="sort-${type.toLowerCase()}" class="trip-sort__input  visually-hidden" data-sort-type="${type}" type="radio" name="trip-sort"
-      value="sort-${type.toLowerCase()}" ${type === defaultType ? `checked` : ``} ${disabledTypes.includes(type) ? `disabled` : ``}>
+      value="sort-${type.toLowerCase()}" ${type === defaultSortType ? `checked` : ``} ${disabledTypes.includes(type) ? `disabled` : ``}>
     <label class="trip-sort__btn" for="sort-${type.toLowerCase()}">${type}</label>
   </div>`;
   }).join(``);
 };
 
-const createTripSortTemplate = () => {
+const createTripSortTemplate = (defaultSortType) => {
   return `<form class="trip-events__trip-sort  trip-sort" action="#" method="get">
-  ${createTripSortItemTemplates()}
+  ${createTripSortItemTemplates(defaultSortType)}
 </form>`;
 };
 
 export default class TripSort extends Abstract {
-  constructor() {
+  constructor(defaultSortType) {
     super();
+
+    this._defaultSortType = defaultSortType;
 
     this._sortTypeChangeHandler = this._sortTypeChangeHandler.bind(this);
   }
 
   getTemplate() {
-    return createTripSortTemplate();
+    return createTripSortTemplate(this._defaultSortType);
   }
 
   setSortTypeChangeHandler(callback) {

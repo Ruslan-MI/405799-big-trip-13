@@ -58,7 +58,7 @@ export default class Trip {
   }
 
   _renderTripSort() {
-    this._tripSortComponent = new TripSortView();
+    this._tripSortComponent = new TripSortView(this._defaultSortType);
 
     render(this._generalContainer, this._tripSortComponent, RenderPosition.BEFOREEND);
 
