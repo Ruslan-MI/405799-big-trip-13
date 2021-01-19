@@ -1,15 +1,12 @@
 import dayjs from "dayjs";
-import {
-  offersTitleMap
-} from "../mock/routePoint.js";
 import Abstract from "./abstract.js";
 
 const OFFERS_COUNT = 2;
 
 const createEventOfferTemplates = (offers) => {
-  return offers.filter((offer) => offer.isChecked).slice(0, OFFERS_COUNT).map((offer) => {
+  return offers.slice(0, OFFERS_COUNT).map((offer) => {
     return `<li class="event__offer">
-  <span class="event__offer-title">${offersTitleMap[offer.title]}</span>
+  <span class="event__offer-title">${offer.title}</span>
   &plus;&euro;&nbsp;
   <span class="event__offer-price">${offer.price}</span>
 </li>`;
@@ -22,7 +19,7 @@ const createTripEventsItemTemplate = (data) => {
     <time class="event__date"
       datetime="${dayjs(data.startTime).format(`YYYY-MM-DD`)}">${dayjs(data.startTime).format(`MMM DD`).toUpperCase()}</time>
     <div class="event__type">
-      <img class="event__type-icon" width="42" height="42" src="img/icons/${data.type.toLowerCase()}.png" alt="Event type icon">
+      <img class="event__type-icon" width="42" height="42" src="img/icons/${data.type}.png" alt="Event type icon">
     </div>
     <h3 class="event__title">${data.type + ` ` + data.city}</h3>
     <div class="event__schedule">

@@ -79,6 +79,7 @@ export default class Event {
     replace(this._eventItemComponent, this._eventEditComponent);
     document.removeEventListener(`keydown`, this._EscKeyDownHandler);
     this._mode = Mode.DEFAULT;
+    this._eventEditComponent.reset(this._routePoint);
   }
 
   _EscKeyDownHandler(evt) {
