@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import flatpickr from "flatpickr";
 import {
   eventTypes,
   offerTypes,
@@ -11,6 +12,7 @@ import {
   getCityNames
 } from "../utils/common.js";
 import Smart from "./smart.js";
+import "../../node_modules/flatpickr/dist/flatpickr.min.css";
 
 const createEventTypeItemTemplates = (data) => {
   return eventTypes.map((type) => {
@@ -127,7 +129,7 @@ const createEventEditTemplate = (data) => {
         <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${data.price}">
       </div>
 
-      <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
+      <button class="event__save-btn  btn  btn--blue" type="submit" ${data.isSubmitDisabled ? `disabled` : ``}>Save</button>
       <button class="event__reset-btn" type="reset">Delete</button>
       <button class="event__rollup-btn" type="button">
         <span class="visually-hidden">Open event</span>
@@ -145,6 +147,7 @@ export default class EventEdit extends Smart {
   constructor(routePoint) {
     super();
     this._data = EventEdit.parseRoutePointToData(routePoint);
+    this._datepicker = null;
 
     this._rollupClickHandler = this._rollupClickHandler.bind(this);
     this._editSubmitHandler = this._editSubmitHandler.bind(this);
@@ -152,8 +155,11 @@ export default class EventEdit extends Smart {
     this._cityChangeHandler = this._cityChangeHandler.bind(this);
     this._priceChangeHandler = this._priceChangeHandler.bind(this);
     this._typeChangeHandler = this._typeChangeHandler.bind(this);
+    this._startTimeChangeHandler = this._startTimeChangeHandler.bind(this);
+    this._endTimeChangeHandler = this._endTimeChangeHandler.bind(this);
 
     this._setInnerHandlers();
+    this._setDatepicker();
   }
 
   static parseRoutePointToData(routePoint) {
@@ -170,7 +176,8 @@ export default class EventEdit extends Smart {
       isDescription: Boolean(description),
       photos,
       isPhotos: Boolean(photos.length > 0),
-      isDestinationSection: Boolean(description || photos.length > 0)
+      isDestinationSection: Boolean(description || photos.length > 0),
+      isSubmitDisabled: Boolean(routePoint.startTime >= routePoint.endTime)
     });
   }
 
@@ -184,6 +191,7 @@ export default class EventEdit extends Smart {
     delete data.photos;
     delete data.isPhotos;
     delete data.isDestinationSection;
+    delete data.isSubmitDisabled;
 
     return data;
   }
@@ -204,6 +212,7 @@ export default class EventEdit extends Smart {
 
   restoreHandlers() {
     this._setInnerHandlers();
+    this._setDatepicker();
     this.setRollupClickHandler(this._callback.rollupClick);
     this.setEditSubmitHandler(this._callback.editSubmit);
   }
@@ -247,6 +256,39 @@ export default class EventEdit extends Smart {
       offers: []
     });
 
+    this.updateData(EventEdit.parseRoutePointToData(this._data), true);
+  }
+
+  _setDatepicker() {
+    if (this._datepicker) {
+      this._datepicker.destroy();
+      this._datepicker = null;
+    }
+
+    this._datepicker = flatpickr(this.getElement().querySelector(`#event-start-time-1`), {
+      dateFormat: `d/m/y H:i`,
+      defaultDate: this._data.startTime,
+      onChange: this._startTimeChangeHandler
+    });
+
+    this._datepicker = flatpickr(this.getElement().querySelector(`#event-end-time-1`), {
+      dateFormat: `d/m/y H:i`,
+      defaultDate: this._data.endTime,
+      onChange: this._endTimeChangeHandler
+    });
+  }
+
+  _startTimeChangeHandler([date]) {
+    this.updateData({
+      startTime: dayjs(date).toDate()
+    });
+    this.updateData(EventEdit.parseRoutePointToData(this._data), true);
+  }
+
+  _endTimeChangeHandler([date]) {
+    this.updateData({
+      endTime: dayjs(date).toDate()
+    });
     this.updateData(EventEdit.parseRoutePointToData(this._data), true);
   }
 
