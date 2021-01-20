@@ -45,3 +45,23 @@ export const sortPrice = (pointA, pointB) => {
 
   return 0;
 };
+
+export const getCheckedType = (data, type) => {
+  if (data.type === type) {
+    return `checked`;
+  }
+
+  return ``;
+};
+
+export const getCheckedOffer = (data, offer) => {
+  if (data.offers.includes(offer)) {
+    return `checked`;
+  }
+
+  return ``;
+};
+
+export const getCityNames = (cityDescriptions) => {
+  return cityDescriptions.map((city) => city.name);
+};
