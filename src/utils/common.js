@@ -55,7 +55,7 @@ export const getCheckedType = (data, type) => {
 };
 
 export const getCheckedOffer = (data, offer) => {
-  if (data.offers.includes(offer)) {
+  if (data.offers.some((dataOffer) => dataOffer.title === offer.title)) {
     return `checked`;
   }
 
@@ -64,4 +64,13 @@ export const getCheckedOffer = (data, offer) => {
 
 export const getCityNames = (cityDescriptions) => {
   return cityDescriptions.map((city) => city.name);
+};
+
+export const getIdForTitle = (title) => {
+  return title.split(` `).join(`-`).toLowerCase();
+};
+
+export const getAvailableOffers = (allOffers, type) => {
+  return allOffers.find((offersData) => offersData.type === type) ?
+    allOffers.find((offersData) => offersData.type === type).offers : [];
 };
