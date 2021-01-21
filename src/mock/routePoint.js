@@ -28,6 +28,10 @@ const cityData = {
   ]
 };
 
+export const eventTypes = [
+  `taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`, `check-in`, `sightseeing`, `restaurant`
+];
+
 const getTrueOrFalse = () => {
   return Boolean(Math.round(Math.random()));
 };
@@ -55,7 +59,7 @@ const getPhotos = () => {
   });
 };
 
-const getCityDescriptions = () => {
+export const getCityExpositions = () => {
   return cityData.city.map((cityName) => {
     return {
       description: getConcatenation(getRandomLength(cityData.description)),
@@ -65,61 +69,47 @@ const getCityDescriptions = () => {
   });
 };
 
-export const cityDescriptions = getCityDescriptions();
-
-export const offerTypes = [
-  {
-    type: `flight`,
-    offers: [
-      {
-        title: `Add luggage`,
-        price: `30`,
-      },
-      {
-        title: `Switch to comfort class`,
-        price: `100`,
-      },
-      {
-        title: `Add meal`,
-        price: `15`,
-      },
-      {
-        title: `Choose seats`,
-        price: `5`,
-      },
-      {
-        title: `Travel by train`,
-        price: `40`,
-      }
-    ]
-  },
-  {
-    type: `taxi`,
-    offers: [
-      {
-        title: `Upgrade to a business class`,
-        price: `120`
-      },
-      {
-        title: `Choose the radio station`,
-        price: `60`
-      }
-    ]
-  }
-];
-
-export const eventTypes = [
-  `taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`, `check-in`, `sightseeing`, `restaurant`
-];
-
-export const offersClassMap = {
-  [`Add luggage`]: `luggage`,
-  [`Switch to comfort class`]: `comfort`,
-  [`Add meal`]: `meal`,
-  [`Choose seats`]: `seats`,
-  [`Travel by train`]: `train`,
-  [`Upgrade to a business class`]: `business`,
-  [`Choose the radio station`]: `radio`
+export const getAllOffers = () => {
+  return [
+    {
+      type: `flight`,
+      offers: [
+        {
+          title: `Add luggage`,
+          price: `30`,
+        },
+        {
+          title: `Switch to comfort class`,
+          price: `100`,
+        },
+        {
+          title: `Add meal`,
+          price: `15`,
+        },
+        {
+          title: `Choose seats`,
+          price: `5`,
+        },
+        {
+          title: `Travel by train`,
+          price: `40`,
+        }
+      ]
+    },
+    {
+      type: `taxi`,
+      offers: [
+        {
+          title: `Upgrade to a business class`,
+          price: `120`
+        },
+        {
+          title: `Choose the radio station`,
+          price: `60`
+        }
+      ]
+    }
+  ];
 };
 
 export const getMockRoutePoint = () => {
@@ -127,7 +117,7 @@ export const getMockRoutePoint = () => {
     id: (Math.floor(Math.random() * 100000)),
     type: eventTypes[6],
     city: cityData.city[getRandomIndex(cityData.city)],
-    offers: offerTypes.find((data) => data.type === eventTypes[6]).offers.slice(Math.floor(Math.random() * 5)),
+    offers: getAllOffers().find((data) => data.type === eventTypes[6]).offers.slice(Math.floor(Math.random() * 5)),
     price: Math.ceil(Math.random() * 500) + 100,
     startTime: dayjs().toDate(),
     endTime: dayjs().add((Math.ceil(Math.random() * 4)), `hour`).add((Math.ceil(Math.random() * 59)), `minute`).toDate(),

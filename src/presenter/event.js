@@ -26,14 +26,14 @@ export default class Event {
     this._editSubmitHandler = this._editSubmitHandler.bind(this);
   }
 
-  init(routePoint) {
+  init(routePoint, allOffers, cityExpositions) {
     this._routePoint = routePoint;
 
     const createdEventItemComponent = this._eventItemComponent;
     const createdEventEditComponent = this._eventEditComponent;
 
     this._eventItemComponent = new EventItemView(routePoint);
-    this._eventEditComponent = new EventEditView(routePoint);
+    this._eventEditComponent = new EventEditView(routePoint, allOffers, cityExpositions);
 
     this._eventItemComponent.setRollupClickHandler(this._eventItemRollupClickHandler);
     this._eventEditComponent.setRollupClickHandler(this._eventEditRollupClickHandler);

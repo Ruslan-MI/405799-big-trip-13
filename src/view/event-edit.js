@@ -1,15 +1,14 @@
 import dayjs from "dayjs";
 import flatpickr from "flatpickr";
 import {
-  eventTypes,
-  offerTypes,
-  cityDescriptions,
-  offersClassMap
+  eventTypes
 } from "../mock/routePoint.js";
 import {
   getCheckedType,
   getCheckedOffer,
-  getCityNames
+  getCityNames,
+  getIdForTitle,
+  getAvailableOffers
 } from "../utils/common.js";
 import Smart from "./smart.js";
 import "../../node_modules/flatpickr/dist/flatpickr.min.css";
@@ -24,13 +23,15 @@ const createEventTypeItemTemplates = (data) => {
   }).join(``);
 };
 
-const createEventSectionOffersTemplate = (data) => {
-  if (data.isAvailableOffers) {
+const createEventSectionOffersTemplate = (data, availableOffers) => {
+  const isAvailableOffers = Boolean(availableOffers.length > 0);
+
+  if (isAvailableOffers) {
     return `<section class="event__section  event__section--offers">
     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
     <div class="event__available-offers">
-      ${createEventOfferSelectorTemplates(data)}
+      ${createEventOfferSelectorTemplates(data, availableOffers)}
     </div>
   </section>`;
   }
@@ -38,12 +39,12 @@ const createEventSectionOffersTemplate = (data) => {
   return ``;
 };
 
-const createEventOfferSelectorTemplates = (data) => {
-  return data.availableOffers.map((offer) => {
+const createEventOfferSelectorTemplates = (data, availableOffers) => {
+  return availableOffers.map((offer) => {
     return `<div class="event__offer-selector">
-  <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offersClassMap[offer.title]}-1" type="checkbox"
-    name="event-offer-${offersClassMap[offer.title]}" ${getCheckedOffer(data, offer)} data-offer-title="${offer.title}">
-  <label class="event__offer-label" for="event-offer-${offersClassMap[offer.title]}-1">
+  <input class="event__offer-checkbox  visually-hidden" id="event-offer-${getIdForTitle(offer.title)}-1" type="checkbox"
+    name="event-offer-${getIdForTitle(offer.title)}" ${getCheckedOffer(data, offer)} data-offer-title="${offer.title}">
+  <label class="event__offer-label" for="event-offer-${getIdForTitle(offer.title)}-1">
     <span class="event__offer-title">${offer.title}</span>
     &plus;&euro;&nbsp;
     <span class="event__offer-price">${offer.price}</span>
@@ -52,15 +53,22 @@ const createEventOfferSelectorTemplates = (data) => {
   }).join(``);
 };
 
-const createEventSectionDestinationTemplate = (data) => {
-  if (data.isDestinationSection) {
+const createEventSectionDestinationTemplate = (data, cityExpositions) => {
+  const cityExposition = cityExpositions.find((city) => city.name === data.city);
+  const description = cityExposition.description;
+  const isDescription = Boolean(description);
+  const photos = cityExposition.photos;
+  const isPhotos = Boolean(photos.length > 0);
+  const isDestinationSection = Boolean(description || photos.length > 0);
+
+  if (isDestinationSection) {
     return `<section class="event__section  event__section--destination">
     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-    ${data.isDescription ? `<p class="event__destination-description">${data.description}</p>` : ``}
+    ${isDescription ? `<p class="event__destination-description">${description}</p>` : ``}
 
-    ${data.isPhotos ? `<div class="event__photos-container">
+    ${isPhotos ? `<div class="event__photos-container">
     <div class="event__photos-tape">
-      ${createEventPhotoTemplates(data)}
+      ${createEventPhotoTemplates(photos)}
     </div>
   </div>` : ``}
 
@@ -69,19 +77,19 @@ const createEventSectionDestinationTemplate = (data) => {
   return ``;
 };
 
-const createEventPhotoTemplates = (data) => {
-  return data.photos.map((photo) => {
+const createEventPhotoTemplates = (photos) => {
+  return photos.map((photo) => {
     return `<img class="event__photo" src="${photo.src}" alt="${photo.alt}">`;
   }).join(``);
 };
 
-const createDatalistOptionTemplates = () => {
-  return getCityNames(cityDescriptions).map((name) => {
+const createDatalistOptionTemplates = (cityExpositions) => {
+  return getCityNames(cityExpositions).map((name) => {
     return `<option value="${name}"></option>`;
   }).join(``);
 };
 
-const createEventEditTemplate = (data) => {
+const createEventEditTemplate = (data, availableOffers, cityExpositions) => {
   return `<li class="trip-events__item">
   <form class="event event--edit" action="#" method="post">
     <header class="event__header">
@@ -107,7 +115,7 @@ const createEventEditTemplate = (data) => {
         <input class="event__input  event__input--destination" id="event-destination-1" type="text"
           name="event-destination" value="${data.city}" list="destination-list-1">
         <datalist id="destination-list-1">
-          ${createDatalistOptionTemplates()}
+          ${createDatalistOptionTemplates(cityExpositions)}
         </datalist>
       </div>
 
@@ -129,25 +137,29 @@ const createEventEditTemplate = (data) => {
         <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${data.price}">
       </div>
 
-      <button class="event__save-btn  btn  btn--blue" type="submit" ${data.isSubmitDisabled ? `disabled` : ``}>Save</button>
+      <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
       <button class="event__reset-btn" type="reset">Delete</button>
       <button class="event__rollup-btn" type="button">
         <span class="visually-hidden">Open event</span>
       </button>
     </header>
     <section class="event__details">
-    ${createEventSectionOffersTemplate(data)}
-    ${createEventSectionDestinationTemplate(data)}
+    ${createEventSectionOffersTemplate(data, availableOffers)}
+    ${createEventSectionDestinationTemplate(data, cityExpositions)}
     </section>
   </form>
 </li>`;
 };
 
 export default class EventEdit extends Smart {
-  constructor(routePoint) {
+  constructor(routePoint, allOffers, cityExpositions) {
     super();
-    this._data = EventEdit.parseRoutePointToData(routePoint);
-    this._datepicker = null;
+    this._data = routePoint;
+    this._allOffers = allOffers;
+    this._availableOffers = getAvailableOffers(this._allOffers, this._data.type);
+    this._cityExpositions = cityExpositions;
+    this._startDatepicker = null;
+    this._endDatepicker = null;
 
     this._rollupClickHandler = this._rollupClickHandler.bind(this);
     this._editSubmitHandler = this._editSubmitHandler.bind(this);
@@ -159,45 +171,10 @@ export default class EventEdit extends Smart {
     this._endTimeChangeHandler = this._endTimeChangeHandler.bind(this);
 
     this._setInnerHandlers();
-    this._setDatepicker();
-  }
-
-  static parseRoutePointToData(routePoint) {
-    const offerType = offerTypes.find((offersItem) => offersItem.type === routePoint.type);
-    const availableOffers = offerType ? offerType.offers : [];
-    const cityDescription = cityDescriptions.find((city) => city.name === routePoint.city);
-    const description = cityDescription.description;
-    const photos = cityDescription.photos;
-
-    return Object.assign({}, routePoint, {
-      availableOffers,
-      isAvailableOffers: Boolean(availableOffers.length > 0),
-      description,
-      isDescription: Boolean(description),
-      photos,
-      isPhotos: Boolean(photos.length > 0),
-      isDestinationSection: Boolean(description || photos.length > 0),
-      isSubmitDisabled: Boolean(routePoint.startTime >= routePoint.endTime)
-    });
-  }
-
-  static parseDataToRoutePoint(data) {
-    data = Object.assign({}, data);
-
-    delete data.availableOffers;
-    delete data.isAvailableOffers;
-    delete data.description;
-    delete data.isDescription;
-    delete data.photos;
-    delete data.isPhotos;
-    delete data.isDestinationSection;
-    delete data.isSubmitDisabled;
-
-    return data;
   }
 
   getTemplate() {
-    return createEventEditTemplate(this._data);
+    return createEventEditTemplate(this._data, this._availableOffers, this._cityExpositions);
   }
 
   setRollupClickHandler(callback) {
@@ -212,20 +189,21 @@ export default class EventEdit extends Smart {
 
   restoreHandlers() {
     this._setInnerHandlers();
-    this._setDatepicker();
     this.setRollupClickHandler(this._callback.rollupClick);
     this.setEditSubmitHandler(this._callback.editSubmit);
   }
 
   reset(routePoint) {
-    this.updateData(EventEdit.parseRoutePointToData(routePoint), true);
+    this.updateData(routePoint, true);
   }
 
   _setInnerHandlers() {
-    if (this._data.isAvailableOffers) {
+    if (this.getElement().querySelector(`.event__available-offers`)) {
       this.getElement().querySelector(`.event__available-offers`).addEventListener(`click`, this._offersToggleHandler);
     }
 
+    this._setStartDatepicker();
+    this._setEndDatepicker();
     this.getElement().querySelector(`.event__input--destination`).addEventListener(`change`, this._cityChangeHandler);
     this.getElement().querySelector(`.event__input--price`).addEventListener(`change`, this._priceChangeHandler);
     this.getElement().querySelector(`.event__type-list`).addEventListener(`change`, this._typeChangeHandler);
@@ -234,16 +212,14 @@ export default class EventEdit extends Smart {
   _cityChangeHandler(evt) {
     this.updateData({
       city: evt.target.value
-    });
-
-    this.updateData(EventEdit.parseRoutePointToData(this._data), true);
+    }, true);
   }
 
   _offersToggleHandler(evt) {
     if (evt.target.matches(`.event__offer-checkbox`)) {
       this.updateData({
         offers: [...this.getElement().querySelectorAll(`.event__offer-checkbox:checked`)].map((checkbox) =>
-          this._data.availableOffers.find((offer) => {
+          this._availableOffers.find((offer) => {
             return offer.title === checkbox.dataset.offerTitle;
           }))
       });
@@ -251,27 +227,34 @@ export default class EventEdit extends Smart {
   }
 
   _typeChangeHandler(evt) {
+    this._availableOffers = getAvailableOffers(this._allOffers, evt.target.value);
+
     this.updateData({
       type: evt.target.value,
       offers: []
-    });
-
-    this.updateData(EventEdit.parseRoutePointToData(this._data), true);
+    }, true);
   }
 
-  _setDatepicker() {
-    if (this._datepicker) {
-      this._datepicker.destroy();
-      this._datepicker = null;
+  _setStartDatepicker() {
+    if (this._startDatepicker) {
+      this._startDatepicker.destroy();
+      this._startDatepicker = null;
     }
 
-    this._datepicker = flatpickr(this.getElement().querySelector(`#event-start-time-1`), {
+    this._startDatepicker = flatpickr(this.getElement().querySelector(`#event-start-time-1`), {
       dateFormat: `d/m/y H:i`,
       defaultDate: this._data.startTime,
       onChange: this._startTimeChangeHandler
     });
+  }
 
-    this._datepicker = flatpickr(this.getElement().querySelector(`#event-end-time-1`), {
+  _setEndDatepicker() {
+    if (this._endDatepicker) {
+      this._endDatepicker.destroy();
+      this._endDatepicker = null;
+    }
+
+    this._endDatepicker = flatpickr(this.getElement().querySelector(`#event-end-time-1`), {
       dateFormat: `d/m/y H:i`,
       defaultDate: this._data.endTime,
       onChange: this._endTimeChangeHandler
@@ -279,17 +262,29 @@ export default class EventEdit extends Smart {
   }
 
   _startTimeChangeHandler([date]) {
-    this.updateData({
-      startTime: dayjs(date).toDate()
-    });
-    this.updateData(EventEdit.parseRoutePointToData(this._data), true);
+    const newStartTime = dayjs(date).toDate();
+    const update = {};
+
+    if (this._data.endTime < newStartTime) {
+      update.endTime = newStartTime;
+    }
+
+    update.startTime = newStartTime;
+
+    this.updateData(update, true);
   }
 
   _endTimeChangeHandler([date]) {
-    this.updateData({
-      endTime: dayjs(date).toDate()
-    });
-    this.updateData(EventEdit.parseRoutePointToData(this._data), true);
+    const newEndTime = dayjs(date).toDate();
+    const update = {};
+
+    if (this._data.startTime > newEndTime) {
+      update.startTime = newEndTime;
+    }
+
+    update.endTime = newEndTime;
+
+    this.updateData(update, true);
   }
 
   _priceChangeHandler(evt) {
@@ -304,6 +299,6 @@ export default class EventEdit extends Smart {
 
   _editSubmitHandler(evt) {
     evt.preventDefault();
-    this._callback.editSubmit(EventEdit.parseDataToRoutePoint(this._data));
+    this._callback.editSubmit(this._data);
   }
 }

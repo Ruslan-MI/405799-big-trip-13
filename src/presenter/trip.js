@@ -33,10 +33,12 @@ export default class Trip {
     this._changeSortType = this._changeSortType.bind(this);
   }
 
-  init(routePoints) {
+  init(routePoints, allOffers, cityExpositions) {
     this._sourcedRoutePoints = routePoints.slice(0, Math.min(MAX_ITEMS_COUNT, routePoints.length));
     this._routePoints = routePoints.slice(0, Math.min(MAX_ITEMS_COUNT, routePoints.length));
     this._sortRoutePoints(this._defaultSortType);
+    this._allOffers = allOffers;
+    this._cityExpositions = cityExpositions;
 
     if (this._routePoints.length === 0) {
       this._renderEmptyListMessage();
@@ -76,7 +78,7 @@ export default class Trip {
 
     this._eventPresenters[routePoint.id] = eventPresenter;
 
-    eventPresenter.init(routePoint);
+    eventPresenter.init(routePoint, this._allOffers, this._cityExpositions);
   }
 
   _renderEvents() {
@@ -94,7 +96,7 @@ export default class Trip {
 
   _updateRoutePoint(changedRoutePoint) {
     this._routePoints = updateItem(this._routePoints, changedRoutePoint);
-    this._eventPresenters[changedRoutePoint.id].init(changedRoutePoint);
+    this._eventPresenters[changedRoutePoint.id].init(changedRoutePoint, this._allOffers, this._cityExpositions);
   }
 
   _clearEvents() {
