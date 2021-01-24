@@ -1,4 +1,7 @@
 import dayjs from "dayjs";
+import {
+  EVENT_TYPES
+} from "../const.js";
 
 const cityData = {
   city: [
@@ -27,10 +30,6 @@ const cityData = {
     `./img/photos/5.jpg`
   ]
 };
-
-export const eventTypes = [
-  `taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`, `check-in`, `sightseeing`, `restaurant`
-];
 
 const getTrueOrFalse = () => {
   return Boolean(Math.round(Math.random()));
@@ -76,23 +75,23 @@ export const getAllOffers = () => {
       offers: [
         {
           title: `Add luggage`,
-          price: `30`,
+          price: 30,
         },
         {
           title: `Switch to comfort class`,
-          price: `100`,
+          price: 100,
         },
         {
           title: `Add meal`,
-          price: `15`,
+          price: 15,
         },
         {
           title: `Choose seats`,
-          price: `5`,
+          price: 5,
         },
         {
           title: `Travel by train`,
-          price: `40`,
+          price: 40,
         }
       ]
     },
@@ -101,25 +100,29 @@ export const getAllOffers = () => {
       offers: [
         {
           title: `Upgrade to a business class`,
-          price: `120`
+          price: 120
         },
         {
           title: `Choose the radio station`,
-          price: `60`
+          price: 60
         }
       ]
     }
   ];
 };
 
-export const getMockRoutePoint = () => {
+export const getID = () => {
+  return (Math.floor(Math.random() * 100000));
+};
+
+export const getMockEvent = () => {
   return {
-    id: (Math.floor(Math.random() * 100000)),
-    type: eventTypes[6],
+    id: getID(),
+    type: EVENT_TYPES[6],
     city: cityData.city[getRandomIndex(cityData.city)],
-    offers: getAllOffers().find((data) => data.type === eventTypes[6]).offers.slice(Math.floor(Math.random() * 5)),
+    offers: getAllOffers().find((data) => data.type === EVENT_TYPES[6]).offers.slice(Math.floor(Math.random() * 5)),
     price: Math.ceil(Math.random() * 500) + 100,
-    startTime: dayjs().toDate(),
+    startTime: dayjs().add((Math.ceil(Math.random() * -2)), `hour`).add((Math.ceil(Math.random() * 59)), `minute`).toDate(),
     endTime: dayjs().add((Math.ceil(Math.random() * 4)), `hour`).add((Math.ceil(Math.random() * 59)), `minute`).toDate(),
     isFavorite: getTrueOrFalse()
   };

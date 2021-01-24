@@ -1,14 +1,8 @@
 import dayjs from "dayjs";
-
-export const updateItem = (items, update) => {
-  const index = items.findIndex((item) => item.id === update.id);
-
-  if (index === -1) {
-    return items;
-  }
-
-  return [...items.slice(0, index), update, ...items.slice(index + 1)];
-};
+import {
+  UpdateType,
+  FilterType
+} from "../const.js";
 
 export const sortDay = (pointA, pointB) => {
   if (dayjs(pointA.startTime) < dayjs(pointB.startTime)) {
@@ -74,3 +68,35 @@ export const getAvailableOffers = (allOffers, type) => {
   return allOffers.find((offersData) => offersData.type === type) ?
     allOffers.find((offersData) => offersData.type === type).offers : [];
 };
+
+export const getRequiredUpdate = (data, update) => {
+  const isTypeChanged = Boolean(data.type !== update.type);
+  const isCityChanged = Boolean(data.city !== update.city);
+  const dataOfferTitles = data.offers.map((offer) => offer.title);
+  const updateOfferTitles = update.offers.map((offer) => offer.title);
+  const isOffersChanged = Boolean(!((dataOfferTitles.every((title) => updateOfferTitles.includes(title)))
+    && (updateOfferTitles.every((title) => dataOfferTitles.includes(title)))));
+  const isPriceChanged = Boolean(data.price !== update.price);
+  const isStartTimeChanged = Boolean(dayjs(data.startTime).diff(update.startTime) !== 0);
+  const isEndTimeChanged = Boolean(dayjs(data.endTime).diff(update.endTime) !== 0);
+
+  if (isCityChanged || isStartTimeChanged || isEndTimeChanged || isPriceChanged || isOffersChanged) {
+    return UpdateType.MAJOR;
+  } else if (isTypeChanged) {
+    return UpdateType.PATCH;
+  }
+
+  return false;
+};
+
+export const filter = {
+  [FilterType.EVERYTHING]: (events) => events,
+  [FilterType.FUTURE]: (events) => events.filter((point) => point.startTime >= dayjs().toDate()),
+  [FilterType.PAST]: (events) => events.filter((point) => point.endTime < dayjs().toDate()),
+};
+
+export const getFilterDisable = (events, filterType) => {
+  return filter[filterType](events).length > 0 ? `` : `disabled`;
+};
+
+export const reducer = (a, b) => a + b;

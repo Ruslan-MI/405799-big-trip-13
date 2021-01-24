@@ -1,20 +1,22 @@
 import dayjs from "dayjs";
+import he from "he";
 import flatpickr from "flatpickr";
+import "../../node_modules/flatpickr/dist/flatpickr.min.css";
+import SmartView from "./smart.js";
 import {
-  eventTypes
-} from "../mock/routePoint.js";
+  EVENT_TYPES
+} from "../const.js";
 import {
   getCheckedType,
   getCheckedOffer,
   getCityNames,
   getIdForTitle,
-  getAvailableOffers
+  getAvailableOffers,
+  getRequiredUpdate
 } from "../utils/common.js";
-import Smart from "./smart.js";
-import "../../node_modules/flatpickr/dist/flatpickr.min.css";
 
 const createEventTypeItemTemplates = (data) => {
-  return eventTypes.map((type) => {
+  return EVENT_TYPES.map((type) => {
     return `<div class="event__type-item">
     <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type"
       value="${type}" ${getCheckedType(data, type)}>
@@ -113,7 +115,7 @@ const createEventEditTemplate = (data, availableOffers, cityExpositions) => {
           ${data.type}
         </label>
         <input class="event__input  event__input--destination" id="event-destination-1" type="text"
-          name="event-destination" value="${data.city}" list="destination-list-1">
+          name="event-destination" value="${he.encode(data.city)}" list="destination-list-1">
         <datalist id="destination-list-1">
           ${createDatalistOptionTemplates(cityExpositions)}
         </datalist>
@@ -151,15 +153,17 @@ const createEventEditTemplate = (data, availableOffers, cityExpositions) => {
 </li>`;
 };
 
-export default class EventEdit extends Smart {
-  constructor(routePoint, allOffers, cityExpositions) {
+export default class EventEdit extends SmartView {
+  constructor(event, allOffers, cityExpositions) {
     super();
-    this._data = routePoint;
+    this._event = event;
+    this._data = event;
     this._allOffers = allOffers;
     this._availableOffers = getAvailableOffers(this._allOffers, this._data.type);
     this._cityExpositions = cityExpositions;
     this._startDatepicker = null;
     this._endDatepicker = null;
+    this._eventSaveButton = this.getElement().querySelector(`.event__save-btn`);
 
     this._rollupClickHandler = this._rollupClickHandler.bind(this);
     this._editSubmitHandler = this._editSubmitHandler.bind(this);
@@ -169,6 +173,7 @@ export default class EventEdit extends Smart {
     this._typeChangeHandler = this._typeChangeHandler.bind(this);
     this._startTimeChangeHandler = this._startTimeChangeHandler.bind(this);
     this._endTimeChangeHandler = this._endTimeChangeHandler.bind(this);
+    this._editDeleteHandler = this._editDeleteHandler.bind(this);
 
     this._setInnerHandlers();
   }
@@ -187,14 +192,34 @@ export default class EventEdit extends Smart {
     this.getElement().querySelector(`.event--edit`).addEventListener(`submit`, this._editSubmitHandler);
   }
 
+  setEditDeleteHandler(callback) {
+    this._callback.editDelete = callback;
+    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._editDeleteHandler);
+  }
+
   restoreHandlers() {
     this._setInnerHandlers();
     this.setRollupClickHandler(this._callback.rollupClick);
     this.setEditSubmitHandler(this._callback.editSubmit);
+    this.setEditDeleteHandler(this._callback.editDelete);
   }
 
-  reset(routePoint) {
-    this.updateData(routePoint, true);
+  reset(event) {
+    this.updateData(event, true);
+  }
+
+  removeElement() {
+    super.removeElement();
+
+    if (this._startDatepicker) {
+      this._startDatepicker.destroy();
+      this._startDatepicker = null;
+    }
+
+    if (this._endDatepicker) {
+      this._endDatepicker.destroy();
+      this._endDatepicker = null;
+    }
   }
 
   _setInnerHandlers() {
@@ -210,6 +235,13 @@ export default class EventEdit extends Smart {
   }
 
   _cityChangeHandler(evt) {
+    if (!getCityNames(this._cityExpositions).includes(evt.target.value)) {
+      this._eventSaveButton.disabled = true;
+      return;
+    }
+
+    this._eventSaveButton.disabled = false;
+
     this.updateData({
       city: evt.target.value
     }, true);
@@ -288,8 +320,15 @@ export default class EventEdit extends Smart {
   }
 
   _priceChangeHandler(evt) {
+    if (!evt.target.value.match(/^\d+$/)) {
+      this._eventSaveButton.disabled = true;
+      return;
+    }
+
+    this._eventSaveButton.disabled = false;
+
     this.updateData({
-      price: evt.target.value
+      price: Number(evt.target.value)
     });
   }
 
@@ -299,6 +338,20 @@ export default class EventEdit extends Smart {
 
   _editSubmitHandler(evt) {
     evt.preventDefault();
-    this._callback.editSubmit(this._data);
+
+    const requiredUpdate = getRequiredUpdate(this._data, this._event);
+
+    if (requiredUpdate) {
+      this._callback.editSubmit(requiredUpdate, this._data);
+      return;
+    }
+
+    this._callback.rollupClick();
+  }
+
+  _editDeleteHandler(evt) {
+    evt.preventDefault();
+
+    this._callback.editDelete(this._data);
   }
 }
