@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import Abstract from "./abstract.js";
+import AbstractView from "./abstract.js";
 
 const OFFERS_COUNT = 2;
 
@@ -51,16 +51,16 @@ const createTripEventsItemTemplate = (data) => {
 </li>`;
 };
 
-export default class EventItem extends Abstract {
-  constructor(routePoint) {
+export default class EventItem extends AbstractView {
+  constructor(event) {
     super();
-    this._routePoint = routePoint;
+    this._event = event;
     this._rollupClickHandler = this._rollupClickHandler.bind(this);
     this._favoriteClickHandler = this._favoriteClickHandler.bind(this);
   }
 
   getTemplate() {
-    return createTripEventsItemTemplate(this._routePoint);
+    return createTripEventsItemTemplate(this._event);
   }
 
   setRollupClickHandler(callback) {

@@ -1,8 +1,15 @@
-import {
-  render, replace, RenderPosition, remove
-} from "../utils/dom-actions.js";
 import EventEditView from "../view/event-edit.js";
 import EventItemView from "../view/trip-events-item.js";
+import {
+  render,
+  replace,
+  remove
+} from "../utils/dom-actions.js";
+import {
+  RenderPosition,
+  UserAction,
+  UpdateType
+} from "../const.js";
 
 const Mode = {
   DEFAULT: `DEFAULT`,
@@ -10,35 +17,39 @@ const Mode = {
 };
 
 export default class Event {
-  constructor(eventListComponent, updateRoutePoint, changeModeHandler) {
+  constructor(eventListComponent, handleViewAction, handleChangeMode, allOffers, cityExpositions) {
     this._eventListComponent = eventListComponent;
-    this._updateRoutePoint = updateRoutePoint;
-    this._changeModeHandler = changeModeHandler;
+    this._handleViewAction = handleViewAction;
+    this._handleChangeMode = handleChangeMode;
+    this._allOffers = allOffers;
+    this._cityExpositions = cityExpositions;
 
     this._eventItemComponent = null;
     this._eventEditComponent = null;
     this._mode = Mode.DEFAULT;
 
-    this._EscKeyDownHandler = this._EscKeyDownHandler.bind(this);
-    this._eventItemRollupClickHandler = this._eventItemRollupClickHandler.bind(this);
-    this._eventEditRollupClickHandler = this._eventEditRollupClickHandler.bind(this);
-    this._favoriteClickHandler = this._favoriteClickHandler.bind(this);
-    this._editSubmitHandler = this._editSubmitHandler.bind(this);
+    this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
+    this._handleEventItemRollupClick = this._handleEventItemRollupClick.bind(this);
+    this._handleEventEditRollupClick = this._handleEventEditRollupClick.bind(this);
+    this._handleFavoriteClick = this._handleFavoriteClick.bind(this);
+    this._handleEditSubmit = this._handleEditSubmit.bind(this);
+    this._handleEditDelete = this._handleEditDelete.bind(this);
   }
 
-  init(routePoint, allOffers, cityExpositions) {
-    this._routePoint = routePoint;
+  init(event) {
+    this._event = event;
 
     const createdEventItemComponent = this._eventItemComponent;
     const createdEventEditComponent = this._eventEditComponent;
 
-    this._eventItemComponent = new EventItemView(routePoint);
-    this._eventEditComponent = new EventEditView(routePoint, allOffers, cityExpositions);
+    this._eventItemComponent = new EventItemView(event);
+    this._eventEditComponent = new EventEditView(event, this._allOffers, this._cityExpositions);
 
-    this._eventItemComponent.setRollupClickHandler(this._eventItemRollupClickHandler);
-    this._eventEditComponent.setRollupClickHandler(this._eventEditRollupClickHandler);
-    this._eventEditComponent.setEditSubmitHandler(this._editSubmitHandler);
-    this._eventItemComponent.setFavoriteClickHandler(this._favoriteClickHandler);
+    this._eventItemComponent.setRollupClickHandler(this._handleEventItemRollupClick);
+    this._eventEditComponent.setRollupClickHandler(this._handleEventEditRollupClick);
+    this._eventItemComponent.setFavoriteClickHandler(this._handleFavoriteClick);
+    this._eventEditComponent.setEditSubmitHandler(this._handleEditSubmit);
+    this._eventEditComponent.setEditDeleteHandler(this._handleEditDelete);
 
     if (createdEventItemComponent === null || createdEventEditComponent === null) {
       render(this._eventListComponent, this._eventItemComponent, RenderPosition.BEFOREEND);
@@ -64,37 +75,44 @@ export default class Event {
 
   resetView() {
     if (this._mode !== Mode.DEFAULT) {
-      this._eventEditRollupClickHandler();
+      this._handleEventEditRollupClick();
     }
   }
 
-  _eventItemRollupClickHandler() {
+  _handleEventItemRollupClick() {
     replace(this._eventEditComponent, this._eventItemComponent);
-    document.addEventListener(`keydown`, this._EscKeyDownHandler);
-    this._changeModeHandler();
+    document.addEventListener(`keydown`, this._escKeyDownHandler);
+    this._handleChangeMode();
     this._mode = Mode.EDITING;
   }
 
-  _eventEditRollupClickHandler() {
+  _handleEventEditRollupClick() {
     replace(this._eventItemComponent, this._eventEditComponent);
-    document.removeEventListener(`keydown`, this._EscKeyDownHandler);
+    document.removeEventListener(`keydown`, this._escKeyDownHandler);
     this._mode = Mode.DEFAULT;
-    this._eventEditComponent.reset(this._routePoint);
+    this._eventEditComponent.reset(this._event);
   }
 
-  _EscKeyDownHandler(evt) {
+  _escKeyDownHandler(evt) {
     if (evt.key === `Escape` || evt.key === `Esc`) {
       evt.preventDefault();
-      this._eventEditRollupClickHandler();
+      this._handleEventEditRollupClick();
     }
   }
 
-  _favoriteClickHandler() {
-    this._updateRoutePoint(Object.assign({}, this._routePoint, {isFavorite: !this._routePoint.isFavorite}));
+  _handleFavoriteClick() {
+    this._handleViewAction(UserAction.UPDATE_EVENT, UpdateType.PATCH, Object.assign({}, this._event, {
+      isFavorite: !this._event.isFavorite
+    }));
   }
 
-  _editSubmitHandler(changedRoutePoint) {
-    this._updateRoutePoint(changedRoutePoint);
-    this._eventEditRollupClickHandler();
+  _handleEditSubmit(updateType, changedEvent) {
+    this._handleEventEditRollupClick();
+    this._handleViewAction(UserAction.UPDATE_EVENT, updateType, changedEvent);
+  }
+
+  _handleEditDelete(deletedEvent) {
+    this._handleEventEditRollupClick();
+    this._handleViewAction(UserAction.DELETE_EVENT, UpdateType.MAJOR, deletedEvent);
   }
 }

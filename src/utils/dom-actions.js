@@ -1,21 +1,14 @@
-// const renderTemplate = (targetTag, template, place) => {
-//   targetTag.insertAdjacentHTML(place, template);
-// };
-
-import Abstract from "../view/abstract.js";
-
-export const RenderPosition = {
-  AFTERBEGIN: `afterbegin`,
-  AFTEREND: `afterend`,
-  BEFOREEND: `beforeend`
-};
+import AbstractView from "../view/abstract.js";
+import {
+  RenderPosition
+} from "../const.js";
 
 export const render = (targetTag, element, place) => {
-  if (targetTag instanceof Abstract) {
+  if (targetTag instanceof AbstractView) {
     targetTag = targetTag.getElement();
   }
 
-  if (element instanceof Abstract) {
+  if (element instanceof AbstractView) {
     element = element.getElement();
   }
 
@@ -40,11 +33,11 @@ export const createElement = (template) => {
 };
 
 export const replace = (newChild, oldChild) => {
-  if (newChild instanceof Abstract) {
+  if (newChild instanceof AbstractView) {
     newChild = newChild.getElement();
   }
 
-  if (oldChild instanceof Abstract) {
+  if (oldChild instanceof AbstractView) {
     oldChild = oldChild.getElement();
   }
 
@@ -58,7 +51,11 @@ export const replace = (newChild, oldChild) => {
 };
 
 export const remove = (component) => {
-  if (!(component instanceof Abstract)) {
+  if (component === null) {
+    return;
+  }
+
+  if (!(component instanceof AbstractView)) {
     throw new Error(`Can remove only components`);
   }
 

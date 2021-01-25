@@ -1,4 +1,7 @@
-import Abstract from "./abstract.js";
+import AbstractView from "./abstract.js";
+import {
+  reducer
+} from "../utils/common.js";
 
 const createTripInfoTemplate = (cities, cost) => {
   return `<section class="trip-main__trip-info  trip-info">
@@ -14,28 +17,26 @@ const createTripInfoTemplate = (cities, cost) => {
 </section>`;
 };
 
-export default class TripInfo extends Abstract {
-  constructor(routePoints) {
+export default class TripInfo extends AbstractView {
+  constructor(events) {
     super();
-    this._routeCities = this._getRouteCities(routePoints);
-    this._routeCost = this._getRouteCost(routePoints);
+    this._eventCities = this._getEventCities(events);
+    this._eventCost = this._getEventCost(events);
   }
 
   getTemplate() {
-    return createTripInfoTemplate(this._routeCities, this._routeCost);
+    return createTripInfoTemplate(this._eventCities, this._eventCost);
   }
 
-  _getRouteCities(routePoints) {
-    return Array.from(new Set(routePoints.map((point) => {
-      return point.city;
+  _getEventCities(events) {
+    return Array.from(new Set(events.map((event) => {
+      return event.city;
     })));
   }
 
-  _getRouteCost(routePoints) {
-    return routePoints.map((point) => {
-      return point.price;
-    }).reduce((a, b) => {
-      return a + b;
-    });
+  _getEventCost(events) {
+    return events.map((event) => {
+      return [event.price, ...event.offers.map((offer) => offer.price)].reduce(reducer);
+    }).reduce(reducer);
   }
 }

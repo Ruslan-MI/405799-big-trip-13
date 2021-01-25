@@ -1,4 +1,4 @@
-import Abstract from "./abstract.js";
+import AbstractView from "./abstract.js";
 
 const createTripTabsTemplate = () => {
   return `<nav class="trip-controls__trip-tabs  trip-tabs">
@@ -7,7 +7,7 @@ const createTripTabsTemplate = () => {
 </nav>`;
 };
 
-export default class TripTabs extends Abstract {
+export default class TripTabs extends AbstractView {
   getTemplate() {
     return createTripTabsTemplate();
   }
