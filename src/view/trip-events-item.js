@@ -1,5 +1,8 @@
 import dayjs from "dayjs";
 import AbstractView from "./abstract.js";
+import {
+  getEventDuration
+} from "../utils/common.js";
 
 const OFFERS_COUNT = 2;
 
@@ -28,7 +31,7 @@ const createTripEventsItemTemplate = (data) => {
         &mdash;
         <time class="event__end-time" datetime="${dayjs(data.endTime).format(`YYYY-MM-DDTHH:mm`)}">${dayjs(data.endTime).format(`HH:mm`)}</time>
       </p>
-      <p class="event__duration">${dayjs(dayjs(data.endTime).diff(data.startTime)).add(-3, `hour`).format(`H[H] m[M]`)}</p>
+      <p class="event__duration">${getEventDuration(data)}</p>
     </div>
     <p class="event__price">
       &euro;&nbsp;<span class="event__price-value">${data.price}</span>

@@ -1,14 +1,17 @@
 import EventsModel from "./model/events.js";
-import OthersModel from "./model/others.js";
+import StoreModel from "./model/store.js";
 import FilterModel from "./model/filter.js";
 import TripTabsView from "./view/trip-tabs.js";
-import TripPresenter from "./presenter/trip.js";
-import FilterPresenter from "./presenter/filter.js";
+import StatisticsView from "./view/statistics.js";
+import TripBoardPresenter from "./presenter/trip-board.js";
+import TripHeaderPresenter from "./presenter/trip-header.js";
 import {
-  RenderPosition
+  RenderPosition,
+  TripTab
 } from "./const.js";
 import {
-  render
+  render,
+  remove
 } from "./utils/dom-actions.js";
 import {
   getMockEvent,
@@ -23,6 +26,7 @@ const tripMain = pageHeader.querySelector(`.trip-main`);
 const tripTabsHeading = pageHeader.querySelector(`.trip-controls h2:nth-child(1)`);
 const tripFiltersHeading = pageHeader.querySelector(`.trip-controls h2:nth-child(2)`);
 const pageMain = document.querySelector(`.page-main`);
+const pageBodyContainer = pageMain.querySelector(`.page-body__container`);
 const tripEvents = pageMain.querySelector(`.trip-events`);
 const eventAddButton = tripMain.querySelector(`.trip-main__event-add-btn`);
 
@@ -32,21 +36,61 @@ const cityExpositions = getCityExpositions();
 
 const filterModel = new FilterModel();
 const eventsModel = new EventsModel();
-const offersModel = new OthersModel();
-const cityExpositionsModel = new OthersModel();
+const offersModel = new StoreModel();
+const cityExpositionsModel = new StoreModel();
 
 eventsModel.setEvents(events);
 offersModel.setData(offers);
 cityExpositionsModel.setData(cityExpositions);
 
-render(tripTabsHeading, new TripTabsView(), RenderPosition.AFTEREND);
+let tripTabsComponent = null;
+let statisticsComponent = null;
 
-const filterPresenter = new FilterPresenter(tripFiltersHeading, filterModel, eventsModel);
-const tripPresenter = new TripPresenter(tripMain, tripEvents, eventsModel, offersModel, cityExpositionsModel, filterModel);
+const defaultTripTab = TripTab.TABLE;
+let currentTripTab = defaultTripTab;
 
-filterPresenter.init();
-tripPresenter.init();
+const resetTripTabs = () => {
+  remove(tripTabsComponent);
 
-eventAddButton.addEventListener(`click`, () => {
-  tripPresenter.createEvent(eventAddButton);
-});
+  tripTabsComponent = new TripTabsView(currentTripTab);
+
+  render(tripTabsHeading, tripTabsComponent, RenderPosition.AFTEREND);
+
+  tripTabsComponent.setTripTabsClickHandler(showCurrentScreen);
+};
+
+const showCurrentScreen = (tripTab) => {
+  currentTripTab = tripTab;
+
+  switch (tripTab) {
+    case TripTab.TABLE:
+      resetTripTabs();
+      remove(statisticsComponent);
+      tripBoardPresenter.init();
+      break;
+    case TripTab.STATS:
+      resetTripTabs();
+      tripBoardPresenter.destroy();
+      statisticsComponent = new StatisticsView(eventsModel.getEvents());
+      render(pageBodyContainer, statisticsComponent, RenderPosition.BEFOREEND);
+      break;
+  }
+};
+
+const handleEventAddClick = () => {
+  if (currentTripTab !== TripTab.TABLE) {
+    currentTripTab = TripTab.TABLE;
+    remove(statisticsComponent);
+    tripBoardPresenter.init();
+  }
+
+  resetTripTabs();
+};
+
+const tripHeaderPresenter = new TripHeaderPresenter(tripMain, tripFiltersHeading, filterModel, eventsModel);
+const tripBoardPresenter = new TripBoardPresenter(tripEvents, eventsModel, offersModel, cityExpositionsModel, filterModel, eventAddButton, handleEventAddClick);
+
+resetTripTabs();
+
+tripHeaderPresenter.init();
+showCurrentScreen(currentTripTab);

@@ -1,4 +1,4 @@
-export default class Others {
+export default class Store {
   constructor() {
     this._data = [];
   }

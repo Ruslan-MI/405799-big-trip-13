@@ -33,3 +33,8 @@ export const FilterType = {
   FUTURE: `future`,
   PAST: `past`
 };
+
+export const TripTab = {
+  TABLE: `Table`,
+  STATS: `Stats`
+};
