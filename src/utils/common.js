@@ -159,7 +159,18 @@ export const getTripDatesRange = (events) => {
 };
 
 export const getEventCities = (events) => {
-  const eventCities = [...new Set(events.sort(sortDay).map((event) => event.city))];
+  const eventCities = [];
+  let previousCity = null;
+
+  events.sort(sortDay).forEach((event) => {
+    if (event.city === previousCity) {
+      return;
+    }
+
+    previousCity = event.city;
+
+    eventCities.push(event.city);
+  });
 
   return `${eventCities.length > 3 ? eventCities[0] + ` &mdash;...&mdash; ` + eventCities[eventCities.length - 1] : eventCities.join(` &mdash; `)}`;
 };
