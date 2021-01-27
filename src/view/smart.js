@@ -20,14 +20,14 @@ export default class Smart extends AbstractView {
     this.restoreHandlers();
   }
 
-  updateData(update, needElementUpdating) {
+  updateData(update, isElementUpdating) {
     if (!update) {
       return;
     }
 
     this._data = Object.assign({}, this._data, update);
 
-    if (needElementUpdating) {
+    if (isElementUpdating) {
       this.updateElement();
     }
   }

@@ -8,6 +8,7 @@ import {
 } from "../mock/event.js";
 import {
   RenderPosition,
+  UpdateType,
   UserAction
 } from "../const.js";
 
@@ -43,7 +44,15 @@ export default class NewEvent {
   }
 
   clear() {
-    this._handleAddCancel();
+    if (this._eventAddComponent) {
+      this._button.disabled = false;
+
+      remove(this._eventAddComponent);
+
+      this._eventAddComponent = null;
+
+      document.removeEventListener(`keydown`, this._escKeyDownHandler);
+    }
   }
 
   _escKeyDownHandler(evt) {
@@ -59,18 +68,12 @@ export default class NewEvent {
       id: getID()
     }));
 
-    this._handleAddCancel();
+    this.clear();
   }
 
   _handleAddCancel() {
-    if (this._eventAddComponent) {
-      this._button.disabled = false;
+    this._handleViewAction(UserAction.ADD_EVENT, UpdateType.MAJOR, null);
 
-      remove(this._eventAddComponent);
-
-      this._eventAddComponent = null;
-
-      document.removeEventListener(`keydown`, this._escKeyDownHandler);
-    }
+    this.clear();
   }
 }

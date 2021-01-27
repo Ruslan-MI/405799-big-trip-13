@@ -31,10 +31,12 @@ export default class Events extends Observer {
   }
 
   addEvent(updateType, update) {
-    this._events = [
-      update,
-      ...this._events
-    ];
+    if (update !== null) {
+      this._events = [
+        update,
+        ...this._events
+      ];
+    }
 
     this._notify(updateType, update);
   }

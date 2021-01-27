@@ -1,4 +1,6 @@
 import dayjs from "dayjs";
+import duration from "dayjs/plugin/duration";
+dayjs.extend(duration);
 import {
   UpdateType,
   FilterType
@@ -100,3 +102,81 @@ export const getFilterDisable = (events, filterType) => {
 };
 
 export const reducer = (a, b) => a + b;
+
+export const getEventTypes = (data) => {
+  return [...new Set(data.map((event) => event.type))];
+};
+
+export const getEventTypePrices = (data) => {
+  return getEventTypes(data).map((type) => {
+    return data.filter((event) => event.type === type).map((event) => event.price).reduce(reducer);
+  });
+};
+
+export const getEventTypeQuantity = (data) => {
+  return getEventTypes(data).map((type) => {
+    return data.filter((event) => event.type === type).length;
+  });
+};
+
+export const getTypeTimeSpend = (data) => {
+  return getEventTypes(data).map((type) => {
+    return dayjs.duration(data.filter((event) => event.type === type).map((event) => dayjs(event.endTime).diff(event.startTime)).reduce(reducer)).days();
+  });
+};
+
+const getTimeRows = (data, sign, isShowZeroes) => {
+  if (data === 0 && !isShowZeroes) {
+    return ``;
+  }
+
+  return `${data < 10 ? `0` + data + sign : data + sign}`;
+};
+
+export const getEventDuration = (data) => {
+  const eventDuration = dayjs.duration(dayjs(data.endTime).diff(data.startTime));
+
+  const days = eventDuration.days();
+  const hours = eventDuration.hours();
+  const minutes = eventDuration.minutes();
+
+  const isForciblyShowHours = days > 0 ? true : false;
+
+  return `${[getTimeRows(days, `D`), getTimeRows(hours, `H`, isForciblyShowHours), getTimeRows(minutes, `M`, true)].join(` `).trim()}`;
+};
+
+export const getTripDatesRange = (events) => {
+  const trip = events.sort(sortDay);
+  const startTripDate = trip[0].startTime;
+  const startTripMonth = dayjs(startTripDate).month();
+  const startTripYear = dayjs(startTripDate).year();
+  const endTripDate = trip[trip.length - 1].endTime;
+  const endTripMonth = dayjs(endTripDate).month();
+  const endTripYear = dayjs(endTripDate).year();
+
+  return startTripYear === endTripYear && startTripMonth === endTripMonth ? `${dayjs(startTripDate).format(`MMM D`)}&nbsp;&mdash;&nbsp;${dayjs(endTripDate).format(`D`)}` :
+    `${dayjs(startTripDate).format(`MMM D`) + `&nbsp;&mdash;&nbsp;` + dayjs(endTripDate).format(`MMM D`)}`;
+};
+
+export const getEventCities = (events) => {
+  const eventCities = [];
+  let previousCity = null;
+
+  events.sort(sortDay).forEach((event) => {
+    if (event.city === previousCity) {
+      return;
+    }
+
+    previousCity = event.city;
+
+    eventCities.push(event.city);
+  });
+
+  return `${eventCities.length > 3 ? eventCities[0] + ` &mdash;...&mdash; ` + eventCities[eventCities.length - 1] : eventCities.join(` &mdash; `)}`;
+};
+
+export const getEventCost = (events) => {
+  return events.map((event) => {
+    return [event.price, ...event.offers.map((offer) => offer.price)].reduce(reducer);
+  }).reduce(reducer);
+};
