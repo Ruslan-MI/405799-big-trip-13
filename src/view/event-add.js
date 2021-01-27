@@ -3,6 +3,7 @@ import he from "he";
 import flatpickr from "flatpickr";
 import "../../node_modules/flatpickr/dist/flatpickr.min.css";
 import SmartView from "./smart.js";
+import StaticStoreModel from "../model/static-store.js";
 import {
   EVENT_TYPES,
   UpdateType
@@ -151,25 +152,24 @@ const createAddEditTemplate = (data, availableOffers, cityExpositions) => {
 };
 
 export default class EventAdd extends SmartView {
-  constructor(allOffers, cityExpositions) {
+  constructor() {
     super();
+
+    this._allOffers = StaticStoreModel.getOffers();
+    this._availableOffers = getAvailableOffers(this._allOffers, this._data.type);
+    this._cityExpositions = StaticStoreModel.getCityExpositions();
+    this._startDatepicker = null;
+    this._endDatepicker = null;
 
     this._data = {
       type: EVENT_TYPES[0],
-      city: cityExpositions[0].name,
+      city: this._cityExpositions[0].name,
       offers: [],
       price: 0,
       startTime: dayjs().toDate(),
       endTime: dayjs().toDate(),
       isFavorite: false
     };
-
-    this._allOffers = allOffers;
-    this._availableOffers = getAvailableOffers(this._allOffers, this._data.type);
-    this._cityExpositions = cityExpositions;
-    this._startDatepicker = null;
-    this._endDatepicker = null;
-    this._eventSaveButton = this.getElement().querySelector(`.event__save-btn`);
 
     this._addSubmitHandler = this._addSubmitHandler.bind(this);
     this._offersToggleHandler = this._offersToggleHandler.bind(this);
@@ -217,6 +217,14 @@ export default class EventAdd extends SmartView {
     }
   }
 
+  _submitButtonDisabled() {
+    this.getElement().querySelector(`.event__save-btn`).disabled = true;
+  }
+
+  _submitButtonEnabled() {
+    this.getElement().querySelector(`.event__save-btn`).disabled = false;
+  }
+
   _setInnerHandlers() {
     if (this.getElement().querySelector(`.event__available-offers`)) {
       this.getElement().querySelector(`.event__available-offers`).addEventListener(`click`, this._offersToggleHandler);
@@ -224,18 +232,18 @@ export default class EventAdd extends SmartView {
 
     this._setStartDatepicker();
     this._setEndDatepicker();
-    this.getElement().querySelector(`.event__input--destination`).addEventListener(`change`, this._cityChangeHandler);
-    this.getElement().querySelector(`.event__input--price`).addEventListener(`change`, this._priceChangeHandler);
+    this.getElement().querySelector(`.event__input--destination`).addEventListener(`input`, this._cityChangeHandler);
+    this.getElement().querySelector(`.event__input--price`).addEventListener(`input`, this._priceChangeHandler);
     this.getElement().querySelector(`.event__type-list`).addEventListener(`change`, this._typeChangeHandler);
   }
 
   _cityChangeHandler(evt) {
     if (!getCityNames(this._cityExpositions).includes(evt.target.value)) {
-      this._eventSaveButton.disabled = true;
+      this._submitButtonDisabled();
       return;
     }
 
-    this._eventSaveButton.disabled = false;
+    this._submitButtonEnabled();
 
     this.updateData({
       city: evt.target.value
@@ -271,6 +279,7 @@ export default class EventAdd extends SmartView {
     this._startDatepicker = flatpickr(this.getElement().querySelector(`#event-start-time-1`), {
       dateFormat: `d/m/y H:i`,
       defaultDate: this._data.startTime,
+      minDate: dayjs().toDate(),
       onChange: this._startTimeChangeHandler
     });
   }
@@ -284,6 +293,7 @@ export default class EventAdd extends SmartView {
     this._endDatepicker = flatpickr(this.getElement().querySelector(`#event-end-time-1`), {
       dateFormat: `d/m/y H:i`,
       defaultDate: this._data.endTime,
+      minDate: dayjs().toDate(),
       onChange: this._endTimeChangeHandler
     });
   }
@@ -316,11 +326,11 @@ export default class EventAdd extends SmartView {
 
   _priceChangeHandler(evt) {
     if (!evt.target.value.match(/^\d+$/)) {
-      this._eventSaveButton.disabled = true;
+      this._submitButtonDisabled();
       return;
     }
 
-    this._eventSaveButton.disabled = false;
+    this._submitButtonEnabled();
 
     this.updateData({
       price: Number(evt.target.value)

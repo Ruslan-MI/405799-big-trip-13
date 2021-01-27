@@ -21,14 +21,10 @@ import {
 } from "../utils/common.js";
 
 export default class TripBoard {
-  constructor(tripGeneralContainer, eventsModel, offersModel, cityExpositionsModel, filterModel, eventAddButton, handleEventAddClick) {
+  constructor(tripGeneralContainer, eventsModel, filterModel) {
     this._generalContainer = tripGeneralContainer;
     this._eventsModel = eventsModel;
     this._filterModel = filterModel;
-    this._offers = offersModel.getData();
-    this._cityExpositions = cityExpositionsModel.getData();
-    this._eventAddButton = eventAddButton;
-    this._handleEventAddClick = handleEventAddClick;
     this._eventPresenters = {};
     this._defaultFilter = this._filterModel.getFilter();
     this._currentFilter = this._defaultFilter;
@@ -43,12 +39,9 @@ export default class TripBoard {
     this._handleModelUpdate = this._handleModelUpdate.bind(this);
     this._handleChangeMode = this._handleChangeMode.bind(this);
     this._handleChangeSortType = this._handleChangeSortType.bind(this);
-    this._eventAddHandler = this._eventAddHandler.bind(this);
 
     this._newEventPresenter =
-      new NewEventPresenter(this._eventListComponent, this._handleViewAction, this._handleChangeMode, this._offers, this._cityExpositions);
-
-    this._eventAddButton.addEventListener(`click`, this._eventAddHandler);
+      new NewEventPresenter(this._eventListComponent, this._handleViewAction, this._handleChangeMode);
   }
 
   init() {
@@ -67,9 +60,7 @@ export default class TripBoard {
     this._clearTrip();
   }
 
-  _eventAddHandler() {
-    this._handleEventAddClick();
-
+  addEvent() {
     this._filterModel.setFilter(UpdateType.MAJOR, this._defaultFilter);
 
     if (this._getEvents().length === 0) {
@@ -80,7 +71,7 @@ export default class TripBoard {
       this._currentSortType = this._defaultSortType;
     }
 
-    this._newEventPresenter.init(this._eventAddButton);
+    this._newEventPresenter.init();
   }
 
   _getEvents() {
@@ -118,7 +109,7 @@ export default class TripBoard {
 
   _renderEvent(event) {
     const eventPresenter =
-      new EventPresenter(this._eventListComponent, this._handleViewAction, this._handleChangeMode, this._offers, this._cityExpositions);
+      new EventPresenter(this._eventListComponent, this._handleViewAction, this._handleChangeMode);
 
     this._eventPresenters[event.id] = eventPresenter;
 

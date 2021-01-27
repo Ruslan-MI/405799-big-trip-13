@@ -1,5 +1,5 @@
 import EventsModel from "./model/events.js";
-import StoreModel from "./model/store.js";
+import StaticStoreModel from "./model/static-store.js";
 import FilterModel from "./model/filter.js";
 import TripTabsView from "./view/trip-tabs.js";
 import StatisticsView from "./view/statistics.js";
@@ -7,7 +7,8 @@ import TripBoardPresenter from "./presenter/trip-board.js";
 import TripHeaderPresenter from "./presenter/trip-header.js";
 import {
   RenderPosition,
-  TripTab
+  TripTab,
+  FilterType
 } from "./const.js";
 import {
   render,
@@ -30,24 +31,20 @@ const pageBodyContainer = pageMain.querySelector(`.page-body__container`);
 const tripEvents = pageMain.querySelector(`.trip-events`);
 const eventAddButton = tripMain.querySelector(`.trip-main__event-add-btn`);
 
-const events = new Array(MOCK_EVENTS_COUNT).fill().map(getMockEvent);
-const offers = getAllOffers();
-const cityExpositions = getCityExpositions();
-
-const filterModel = new FilterModel();
-const eventsModel = new EventsModel();
-const offersModel = new StoreModel();
-const cityExpositionsModel = new StoreModel();
-
-eventsModel.setEvents(events);
-offersModel.setData(offers);
-cityExpositionsModel.setData(cityExpositions);
+const defaultTripTab = TripTab.TABLE;
+let currentTripTab = defaultTripTab;
+const defaultFilter = FilterType.EVERYTHING;
 
 let tripTabsComponent = null;
 let statisticsComponent = null;
 
-const defaultTripTab = TripTab.TABLE;
-let currentTripTab = defaultTripTab;
+const filterModel = new FilterModel();
+const eventsModel = new EventsModel();
+
+filterModel.setFilter(null, defaultFilter);
+eventsModel.setEvents(new Array(MOCK_EVENTS_COUNT).fill().map(getMockEvent));
+StaticStoreModel.setOffers(getAllOffers());
+StaticStoreModel.setCityExpositions(getCityExpositions());
 
 const resetTripTabs = () => {
   remove(tripTabsComponent);
@@ -77,20 +74,23 @@ const showCurrentScreen = (tripTab) => {
   }
 };
 
-const handleEventAddClick = () => {
+const eventAddClickHandler = () => {
   if (currentTripTab !== TripTab.TABLE) {
     currentTripTab = TripTab.TABLE;
     remove(statisticsComponent);
     tripBoardPresenter.init();
   }
 
+  tripBoardPresenter.addEvent();
   resetTripTabs();
 };
 
 const tripHeaderPresenter = new TripHeaderPresenter(tripMain, tripFiltersHeading, filterModel, eventsModel);
-const tripBoardPresenter = new TripBoardPresenter(tripEvents, eventsModel, offersModel, cityExpositionsModel, filterModel, eventAddButton, handleEventAddClick);
+const tripBoardPresenter = new TripBoardPresenter(tripEvents, eventsModel, filterModel);
 
 resetTripTabs();
+
+eventAddButton.addEventListener(`click`, eventAddClickHandler);
 
 tripHeaderPresenter.init();
 showCurrentScreen(currentTripTab);

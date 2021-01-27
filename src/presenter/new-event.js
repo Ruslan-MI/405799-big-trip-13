@@ -13,14 +13,11 @@ import {
 } from "../const.js";
 
 export default class NewEvent {
-  constructor(eventListComponent, handleViewAction, handleChangeMode, allOffers, cityExpositions) {
+  constructor(eventListComponent, handleViewAction, handleChangeMode) {
     this._eventListComponent = eventListComponent;
     this._handleViewAction = handleViewAction;
     this._handleChangeMode = handleChangeMode;
-    this._allOffers = allOffers;
-    this._cityExpositions = cityExpositions;
 
-    this._button = null;
     this._eventAddComponent = null;
 
     this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
@@ -28,12 +25,10 @@ export default class NewEvent {
     this._handleAddCancel = this._handleAddCancel.bind(this);
   }
 
-  init(button) {
-    this._button = button;
+  init() {
+    this._buttonDisabled();
 
-    this._button.disabled = true;
-
-    this._eventAddComponent = new EventAddView(this._allOffers, this._cityExpositions);
+    this._eventAddComponent = new EventAddView();
 
     this._eventAddComponent.setAddSubmitHandler(this._handleAddSubmit);
     this._eventAddComponent.setAddCancelHandler(this._handleAddCancel);
@@ -45,7 +40,7 @@ export default class NewEvent {
 
   clear() {
     if (this._eventAddComponent) {
-      this._button.disabled = false;
+      this._buttonEnabled();
 
       remove(this._eventAddComponent);
 
@@ -53,6 +48,14 @@ export default class NewEvent {
 
       document.removeEventListener(`keydown`, this._escKeyDownHandler);
     }
+  }
+
+  _buttonDisabled() {
+    document.querySelector(`.trip-main__event-add-btn`).disabled = true;
+  }
+
+  _buttonEnabled() {
+    document.querySelector(`.trip-main__event-add-btn`).disabled = false;
   }
 
   _escKeyDownHandler(evt) {

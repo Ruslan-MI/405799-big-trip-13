@@ -3,6 +3,7 @@ import he from "he";
 import flatpickr from "flatpickr";
 import "../../node_modules/flatpickr/dist/flatpickr.min.css";
 import SmartView from "./smart.js";
+import StaticStoreModel from "../model/static-store.js";
 import {
   EVENT_TYPES
 } from "../const.js";
@@ -154,13 +155,13 @@ const createEventEditTemplate = (data, availableOffers, cityExpositions) => {
 };
 
 export default class EventEdit extends SmartView {
-  constructor(event, allOffers, cityExpositions) {
+  constructor(event) {
     super();
     this._event = event;
     this._data = event;
-    this._allOffers = allOffers;
+    this._allOffers = StaticStoreModel.getOffers();
     this._availableOffers = getAvailableOffers(this._allOffers, this._data.type);
-    this._cityExpositions = cityExpositions;
+    this._cityExpositions = StaticStoreModel.getCityExpositions();
     this._startDatepicker = null;
     this._endDatepicker = null;
     this._eventSaveButton = this.getElement().querySelector(`.event__save-btn`);
@@ -229,8 +230,8 @@ export default class EventEdit extends SmartView {
 
     this._setStartDatepicker();
     this._setEndDatepicker();
-    this.getElement().querySelector(`.event__input--destination`).addEventListener(`change`, this._cityChangeHandler);
-    this.getElement().querySelector(`.event__input--price`).addEventListener(`change`, this._priceChangeHandler);
+    this.getElement().querySelector(`.event__input--destination`).addEventListener(`input`, this._cityChangeHandler);
+    this.getElement().querySelector(`.event__input--price`).addEventListener(`input`, this._priceChangeHandler);
     this.getElement().querySelector(`.event__type-list`).addEventListener(`change`, this._typeChangeHandler);
   }
 
@@ -276,6 +277,7 @@ export default class EventEdit extends SmartView {
     this._startDatepicker = flatpickr(this.getElement().querySelector(`#event-start-time-1`), {
       dateFormat: `d/m/y H:i`,
       defaultDate: this._data.startTime,
+      minDate: dayjs().toDate(),
       onChange: this._startTimeChangeHandler
     });
   }
@@ -289,6 +291,7 @@ export default class EventEdit extends SmartView {
     this._endDatepicker = flatpickr(this.getElement().querySelector(`#event-end-time-1`), {
       dateFormat: `d/m/y H:i`,
       defaultDate: this._data.endTime,
+      minDate: dayjs().toDate(),
       onChange: this._endTimeChangeHandler
     });
   }
