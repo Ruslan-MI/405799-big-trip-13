@@ -82,11 +82,11 @@ export default class EventItem extends AbstractView {
   }
 
   _disableFavoriteButton() {
-    this.getElement().querySelector(`.event__favorite-btn`).disable = true;
+    this.getElement().querySelector(`.event__favorite-btn`).disabled = true;
   }
 
   _enableFavoriteButton() {
-    this.getElement().querySelector(`.event__favorite-btn`).disable = false;
+    this.getElement().querySelector(`.event__favorite-btn`).disabled = false;
   }
 
   _rollupClickHandler() {
@@ -94,6 +94,8 @@ export default class EventItem extends AbstractView {
   }
 
   _favoriteClickHandler() {
+    this._disableFavoriteButton();
+
     this._callback.favoriteClick();
   }
 }
