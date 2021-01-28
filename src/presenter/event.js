@@ -77,6 +77,17 @@ export default class Event {
     }
   }
 
+  resetForError() {
+    switch (this._mode) {
+      case Mode.DEFAULT:
+        this._eventItemComponent.resetForError();
+        break;
+      case Mode.EDITING:
+        this._eventEditComponent.resetForError();
+        break;
+    }
+  }
+
   _handleEventItemRollupClick() {
     replace(this._eventEditComponent, this._eventItemComponent);
     document.addEventListener(`keydown`, this._escKeyDownHandler);
@@ -105,12 +116,10 @@ export default class Event {
   }
 
   _handleEditSubmit(updateType, changedEvent) {
-    this._handleEventEditRollupClick();
     this._handleViewAction(UserAction.UPDATE_EVENT, updateType, changedEvent);
   }
 
   _handleEditDelete(deletedEvent) {
-    this._handleEventEditRollupClick();
     this._handleViewAction(UserAction.DELETE_EVENT, UpdateType.MAJOR, deletedEvent);
   }
 }

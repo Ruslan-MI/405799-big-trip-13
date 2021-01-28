@@ -58,8 +58,8 @@ export const getCheckedOffer = (data, offer) => {
   return ``;
 };
 
-export const getCityNames = (cityDescriptions) => {
-  return cityDescriptions.map((city) => city.name);
+export const getCityNames = (destinations) => {
+  return destinations.map((destination) => destination.name);
 };
 
 export const getIdForTitle = (title) => {
@@ -73,7 +73,7 @@ export const getAvailableOffers = (allOffers, type) => {
 
 export const getRequiredUpdate = (data, update) => {
   const isTypeChanged = Boolean(data.type !== update.type);
-  const isCityChanged = Boolean(data.city !== update.city);
+  const isDestinationChanged = Boolean(data.destination.name !== update.destination.name);
   const dataOfferTitles = data.offers.map((offer) => offer.title);
   const updateOfferTitles = update.offers.map((offer) => offer.title);
   const isOffersChanged = Boolean(!((dataOfferTitles.every((title) => updateOfferTitles.includes(title)))
@@ -82,9 +82,11 @@ export const getRequiredUpdate = (data, update) => {
   const isStartTimeChanged = Boolean(dayjs(data.startTime).diff(update.startTime) !== 0);
   const isEndTimeChanged = Boolean(dayjs(data.endTime).diff(update.endTime) !== 0);
 
-  if (isCityChanged || isStartTimeChanged || isEndTimeChanged || isPriceChanged || isOffersChanged) {
+  if (isDestinationChanged || isStartTimeChanged || isEndTimeChanged || isPriceChanged || isOffersChanged) {
     return UpdateType.MAJOR;
-  } else if (isTypeChanged) {
+  }
+
+  if (isTypeChanged) {
     return UpdateType.PATCH;
   }
 
@@ -93,8 +95,8 @@ export const getRequiredUpdate = (data, update) => {
 
 export const filter = {
   [FilterType.EVERYTHING]: (events) => events,
-  [FilterType.FUTURE]: (events) => events.filter((point) => point.startTime >= dayjs().toDate()),
-  [FilterType.PAST]: (events) => events.filter((point) => point.endTime < dayjs().toDate()),
+  [FilterType.FUTURE]: (events) => events.filter((point) => point.startTime >= new Date()),
+  [FilterType.PAST]: (events) => events.filter((point) => point.endTime < new Date()),
 };
 
 export const getFilterDisable = (events, filterType) => {
@@ -163,13 +165,13 @@ export const getEventCities = (events) => {
   let previousCity = null;
 
   events.sort(sortDay).forEach((event) => {
-    if (event.city === previousCity) {
+    if (event.destination.name === previousCity) {
       return;
     }
 
-    previousCity = event.city;
+    previousCity = event.destination.name;
 
-    eventCities.push(event.city);
+    eventCities.push(event.destination.name);
   });
 
   return `${eventCities.length > 3 ? eventCities[0] + ` &mdash;...&mdash; ` + eventCities[eventCities.length - 1] : eventCities.join(` &mdash; `)}`;

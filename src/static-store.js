@@ -1,22 +1,22 @@
 export default class StaticStore {
   constructor() {
     this._offers = [];
-    this._cityExpositions = [];
+    this._destinations = [];
   }
 
   static setOffers(data) {
     this._offers = data.slice();
   }
 
-  static setCityExpositions(data) {
-    this._cityExpositions = data.slice();
+  static setDestinations(data) {
+    this._destinations = data.slice();
   }
 
   static getOffers() {
     return this._offers;
   }
 
-  static getCityExpositions() {
-    return this._cityExpositions;
+  static getDestinations() {
+    return this._destinations;
   }
 }

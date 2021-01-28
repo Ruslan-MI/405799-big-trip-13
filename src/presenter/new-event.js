@@ -4,19 +4,14 @@ import {
   remove
 } from "../utils/dom-actions.js";
 import {
-  getID
-} from "../mock/event.js";
-import {
   RenderPosition,
-  UpdateType,
   UserAction
 } from "../const.js";
 
 export default class NewEvent {
-  constructor(eventListComponent, handleViewAction, handleChangeMode) {
+  constructor(eventListComponent, handleViewAction) {
     this._eventListComponent = eventListComponent;
     this._handleViewAction = handleViewAction;
-    this._handleChangeMode = handleChangeMode;
 
     this._eventAddComponent = null;
 
@@ -26,7 +21,7 @@ export default class NewEvent {
   }
 
   init() {
-    this._buttonDisabled();
+    this._disableEventAddButton();
 
     this._eventAddComponent = new EventAddView();
 
@@ -40,7 +35,7 @@ export default class NewEvent {
 
   clear() {
     if (this._eventAddComponent) {
-      this._buttonEnabled();
+      this.enableEventAddButton();
 
       remove(this._eventAddComponent);
 
@@ -50,11 +45,15 @@ export default class NewEvent {
     }
   }
 
-  _buttonDisabled() {
+  resetForError() {
+    this._eventAddComponent.resetForError();
+  }
+
+  _disableEventAddButton() {
     document.querySelector(`.trip-main__event-add-btn`).disabled = true;
   }
 
-  _buttonEnabled() {
+  enableEventAddButton() {
     document.querySelector(`.trip-main__event-add-btn`).disabled = false;
   }
 
@@ -67,16 +66,10 @@ export default class NewEvent {
   }
 
   _handleAddSubmit(updateType, addedEvent) {
-    this._handleViewAction(UserAction.ADD_EVENT, updateType, Object.assign({}, addedEvent, {
-      id: getID()
-    }));
-
-    this.clear();
+    this._handleViewAction(UserAction.ADD_EVENT, updateType, addedEvent);
   }
 
   _handleAddCancel() {
-    this._handleViewAction(UserAction.ADD_EVENT, UpdateType.MAJOR, null);
-
     this.clear();
   }
 }

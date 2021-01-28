@@ -3,7 +3,7 @@ import he from "he";
 import flatpickr from "flatpickr";
 import "../../node_modules/flatpickr/dist/flatpickr.min.css";
 import SmartView from "./smart.js";
-import StaticStoreModel from "../model/static-store.js";
+import StaticStore from "../static-store.js";
 import {
   EVENT_TYPES
 } from "../const.js";
@@ -56,22 +56,23 @@ const createEventOfferSelectorTemplates = (data, availableOffers) => {
   }).join(``);
 };
 
-const createEventSectionDestinationTemplate = (data, cityExpositions) => {
-  const cityExposition = cityExpositions.find((city) => city.name === data.city);
-  const description = cityExposition.description;
+const createEventSectionDestinationTemplate = (data) => {
+  const {
+    description,
+    pictures
+  } = data.destination;
   const isDescription = Boolean(description);
-  const photos = cityExposition.photos;
-  const isPhotos = Boolean(photos.length > 0);
-  const isDestinationSection = Boolean(description || photos.length > 0);
+  const isPictures = Boolean(pictures.length > 0);
+  const isDestinationSection = Boolean(isDescription || isPictures);
 
   if (isDestinationSection) {
     return `<section class="event__section  event__section--destination">
     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
     ${isDescription ? `<p class="event__destination-description">${description}</p>` : ``}
 
-    ${isPhotos ? `<div class="event__photos-container">
+    ${isPictures ? `<div class="event__photos-container">
     <div class="event__photos-tape">
-      ${createEventPhotoTemplates(photos)}
+      ${createEventPhotoTemplates(pictures)}
     </div>
   </div>` : ``}
 
@@ -80,19 +81,19 @@ const createEventSectionDestinationTemplate = (data, cityExpositions) => {
   return ``;
 };
 
-const createEventPhotoTemplates = (photos) => {
-  return photos.map((photo) => {
-    return `<img class="event__photo" src="${photo.src}" alt="${photo.alt}">`;
+const createEventPhotoTemplates = (pictures) => {
+  return pictures.map((picture) => {
+    return `<img class="event__photo" src="${picture.src}" alt="${picture.description}">`;
   }).join(``);
 };
 
-const createDatalistOptionTemplates = (cityExpositions) => {
-  return getCityNames(cityExpositions).map((name) => {
+const createDatalistOptionTemplates = (destinations) => {
+  return getCityNames(destinations).map((name) => {
     return `<option value="${name}"></option>`;
   }).join(``);
 };
 
-const createEventEditTemplate = (data, availableOffers, cityExpositions) => {
+const createEventEditTemplate = (data, availableOffers, destinations) => {
   return `<li class="trip-events__item">
   <form class="event event--edit" action="#" method="post">
     <header class="event__header">
@@ -116,9 +117,9 @@ const createEventEditTemplate = (data, availableOffers, cityExpositions) => {
           ${data.type}
         </label>
         <input class="event__input  event__input--destination" id="event-destination-1" type="text"
-          name="event-destination" value="${he.encode(data.city)}" list="destination-list-1">
+          name="event-destination" value="${he.encode(data.destination.name)}" list="destination-list-1">
         <datalist id="destination-list-1">
-          ${createDatalistOptionTemplates(cityExpositions)}
+          ${createDatalistOptionTemplates(destinations)}
         </datalist>
       </div>
 
@@ -148,7 +149,7 @@ const createEventEditTemplate = (data, availableOffers, cityExpositions) => {
     </header>
     <section class="event__details">
     ${createEventSectionOffersTemplate(data, availableOffers)}
-    ${createEventSectionDestinationTemplate(data, cityExpositions)}
+    ${createEventSectionDestinationTemplate(data)}
     </section>
   </form>
 </li>`;
@@ -159,28 +160,28 @@ export default class EventEdit extends SmartView {
     super();
     this._event = event;
     this._data = event;
-    this._allOffers = StaticStoreModel.getOffers();
+    this._allOffers = StaticStore.getOffers();
     this._availableOffers = getAvailableOffers(this._allOffers, this._data.type);
-    this._cityExpositions = StaticStoreModel.getCityExpositions();
+    this._destinations = StaticStore.getDestinations();
     this._startDatepicker = null;
     this._endDatepicker = null;
-    this._eventSaveButton = this.getElement().querySelector(`.event__save-btn`);
 
     this._rollupClickHandler = this._rollupClickHandler.bind(this);
     this._editSubmitHandler = this._editSubmitHandler.bind(this);
     this._offersToggleHandler = this._offersToggleHandler.bind(this);
-    this._cityChangeHandler = this._cityChangeHandler.bind(this);
+    this._destinationChangeHandler = this._destinationChangeHandler.bind(this);
     this._priceChangeHandler = this._priceChangeHandler.bind(this);
     this._typeChangeHandler = this._typeChangeHandler.bind(this);
     this._startTimeChangeHandler = this._startTimeChangeHandler.bind(this);
     this._endTimeChangeHandler = this._endTimeChangeHandler.bind(this);
     this._editDeleteHandler = this._editDeleteHandler.bind(this);
+    this._enableForm = this._enableForm.bind(this);
 
     this._setInnerHandlers();
   }
 
   getTemplate() {
-    return createEventEditTemplate(this._data, this._availableOffers, this._cityExpositions);
+    return createEventEditTemplate(this._data, this._availableOffers, this._destinations);
   }
 
   setRollupClickHandler(callback) {
@@ -223,6 +224,39 @@ export default class EventEdit extends SmartView {
     }
   }
 
+  resetForError() {
+    this.getElement().querySelector(`.event__save-btn`).textContent = `Save`;
+    this.getElement().querySelector(`.event__reset-btn`).textContent = `Delete`;
+
+    this._shake(this._enableForm);
+  }
+
+  _disableSubmitButton() {
+    this.getElement().querySelector(`.event__save-btn`).disabled = true;
+  }
+
+  _enableSubmitButton() {
+    this.getElement().querySelector(`.event__save-btn`).disabled = false;
+  }
+
+  _disableForm() {
+    this.getElement().querySelectorAll(`input`).forEach((input) => {
+      input.disabled = true;
+    });
+    this.getElement().querySelectorAll(`button`).forEach((button) => {
+      button.disabled = true;
+    });
+  }
+
+  _enableForm() {
+    this.getElement().querySelectorAll(`input`).forEach((input) => {
+      input.disabled = false;
+    });
+    this.getElement().querySelectorAll(`button`).forEach((button) => {
+      button.disabled = false;
+    });
+  }
+
   _setInnerHandlers() {
     if (this.getElement().querySelector(`.event__available-offers`)) {
       this.getElement().querySelector(`.event__available-offers`).addEventListener(`click`, this._offersToggleHandler);
@@ -230,21 +264,21 @@ export default class EventEdit extends SmartView {
 
     this._setStartDatepicker();
     this._setEndDatepicker();
-    this.getElement().querySelector(`.event__input--destination`).addEventListener(`input`, this._cityChangeHandler);
+    this.getElement().querySelector(`.event__input--destination`).addEventListener(`input`, this._destinationChangeHandler);
     this.getElement().querySelector(`.event__input--price`).addEventListener(`input`, this._priceChangeHandler);
     this.getElement().querySelector(`.event__type-list`).addEventListener(`change`, this._typeChangeHandler);
   }
 
-  _cityChangeHandler(evt) {
-    if (!getCityNames(this._cityExpositions).includes(evt.target.value)) {
-      this._eventSaveButton.disabled = true;
+  _destinationChangeHandler(evt) {
+    if (!getCityNames(this._destinations).includes(evt.target.value)) {
+      this._disableSubmitButton();
       return;
     }
 
-    this._eventSaveButton.disabled = false;
+    this._enableSubmitButton();
 
     this.updateData({
-      city: evt.target.value
+      destination: this._destinations.find((destination) => destination.name === evt.target.value)
     }, true);
   }
 
@@ -252,9 +286,7 @@ export default class EventEdit extends SmartView {
     if (evt.target.matches(`.event__offer-checkbox`)) {
       this.updateData({
         offers: [...this.getElement().querySelectorAll(`.event__offer-checkbox:checked`)].map((checkbox) =>
-          this._availableOffers.find((offer) => {
-            return offer.title === checkbox.dataset.offerTitle;
-          }))
+          this._availableOffers.find((offer) => offer.title === checkbox.dataset.offerTitle))
       });
     }
   }
@@ -277,7 +309,7 @@ export default class EventEdit extends SmartView {
     this._startDatepicker = flatpickr(this.getElement().querySelector(`#event-start-time-1`), {
       dateFormat: `d/m/y H:i`,
       defaultDate: this._data.startTime,
-      minDate: dayjs().toDate(),
+      minDate: new Date(),
       onChange: this._startTimeChangeHandler
     });
   }
@@ -291,7 +323,7 @@ export default class EventEdit extends SmartView {
     this._endDatepicker = flatpickr(this.getElement().querySelector(`#event-end-time-1`), {
       dateFormat: `d/m/y H:i`,
       defaultDate: this._data.endTime,
-      minDate: dayjs().toDate(),
+      minDate: new Date(),
       onChange: this._endTimeChangeHandler
     });
   }
@@ -324,11 +356,11 @@ export default class EventEdit extends SmartView {
 
   _priceChangeHandler(evt) {
     if (!evt.target.value.match(/^\d+$/)) {
-      this._eventSaveButton.disabled = true;
+      this._disableSubmitButton();
       return;
     }
 
-    this._eventSaveButton.disabled = false;
+    this._enableSubmitButton();
 
     this.updateData({
       price: Number(evt.target.value)
@@ -345,7 +377,9 @@ export default class EventEdit extends SmartView {
     const requiredUpdate = getRequiredUpdate(this._data, this._event);
 
     if (requiredUpdate) {
+      this._disableForm();
       this._callback.editSubmit(requiredUpdate, this._data);
+      this.getElement().querySelector(`.event__save-btn`).textContent = `Saving...`;
       return;
     }
 
@@ -355,6 +389,8 @@ export default class EventEdit extends SmartView {
   _editDeleteHandler(evt) {
     evt.preventDefault();
 
+    this._disableForm();
     this._callback.editDelete(this._data);
+    this.getElement().querySelector(`.event__reset-btn`).textContent = `Deleting...`;
   }
 }

@@ -24,7 +24,7 @@ const createTripEventsItemTemplate = (data) => {
     <div class="event__type">
       <img class="event__type-icon" width="42" height="42" src="img/icons/${data.type}.png" alt="Event type icon">
     </div>
-    <h3 class="event__title">${data.type + ` ` + data.city}</h3>
+    <h3 class="event__title">${data.type + ` ` + data.destination.name}</h3>
     <div class="event__schedule">
       <p class="event__time">
         <time class="event__start-time" datetime="${dayjs(data.startTime).format(`YYYY-MM-DDTHH:mm`)}">${dayjs(data.startTime).format(`HH:mm`)}</time>
@@ -60,6 +60,7 @@ export default class EventItem extends AbstractView {
     this._event = event;
     this._rollupClickHandler = this._rollupClickHandler.bind(this);
     this._favoriteClickHandler = this._favoriteClickHandler.bind(this);
+    this._enableFavoriteButton = this._enableFavoriteButton.bind(this);
   }
 
   getTemplate() {
@@ -74,6 +75,18 @@ export default class EventItem extends AbstractView {
   setFavoriteClickHandler(callback) {
     this._callback.favoriteClick = callback;
     this.getElement().querySelector(`.event__favorite-btn`).addEventListener(`click`, this._favoriteClickHandler);
+  }
+
+  resetForError() {
+    this._shake(this._enableFavoriteButton);
+  }
+
+  _disableFavoriteButton() {
+    this.getElement().querySelector(`.event__favorite-btn`).disable = true;
+  }
+
+  _enableFavoriteButton() {
+    this.getElement().querySelector(`.event__favorite-btn`).disable = false;
   }
 
   _rollupClickHandler() {
