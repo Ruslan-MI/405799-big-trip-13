@@ -1,7 +1,10 @@
-import dayjs from "dayjs";
 import AbstractView from "./abstract.js";
 import {
-  getEventDuration
+  getEventDateDatetime,
+  getEventDateValue,
+  getEventDuration,
+  getEventTimeDatetime,
+  getEventTimeValue
 } from "../utils/common.js";
 
 const OFFERS_COUNT = 2;
@@ -20,16 +23,16 @@ const createTripEventsItemTemplate = (data) => {
   return `<li class="trip-events__item">
   <div class="event">
     <time class="event__date"
-      datetime="${dayjs(data.startTime).format(`YYYY-MM-DD`)}">${dayjs(data.startTime).format(`MMM DD`).toUpperCase()}</time>
+      datetime="${getEventDateDatetime(data.startTime)}">${getEventDateValue(data.startTime)}</time>
     <div class="event__type">
       <img class="event__type-icon" width="42" height="42" src="img/icons/${data.type}.png" alt="Event type icon">
     </div>
     <h3 class="event__title">${data.type} ${data.destination.name}</h3>
     <div class="event__schedule">
       <p class="event__time">
-        <time class="event__start-time" datetime="${dayjs(data.startTime).format(`YYYY-MM-DDTHH:mm`)}">${dayjs(data.startTime).format(`HH:mm`)}</time>
+        <time class="event__start-time" datetime="${getEventTimeDatetime(data.startTime)}">${getEventTimeValue(data.startTime)}</time>
         &mdash;
-        <time class="event__end-time" datetime="${dayjs(data.endTime).format(`YYYY-MM-DDTHH:mm`)}">${dayjs(data.endTime).format(`HH:mm`)}</time>
+        <time class="event__end-time" datetime="${getEventTimeDatetime(data.endTime)}">${getEventTimeValue(data.endTime)}</time>
       </p>
       <p class="event__duration">${getEventDuration(data)}</p>
     </div>

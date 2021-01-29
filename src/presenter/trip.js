@@ -172,8 +172,8 @@ export default class Trip {
           });
         break;
       case UserAction.ADD_EVENT:
-        this._apiNetwork.addEvent(update).
-          then((response) => {
+        this._apiNetwork.addEvent(update)
+          .then((response) => {
             this._eventsModel.addData(updateType, response);
           })
           .catch(() => {
@@ -181,8 +181,8 @@ export default class Trip {
           });
         break;
       case UserAction.DELETE_EVENT:
-        this._apiNetwork.deleteEvent(update).
-          then(() => {
+        this._apiNetwork.deleteEvent(update)
+          .then(() => {
             this._eventsModel.deleteData(updateType, update);
           })
           .catch(() => {

@@ -163,3 +163,13 @@ export const getEventCities = (events) => {
 export const getEventCost = (events) =>
   events.map((event) =>
     [event.price, ...event.offers.map((offer) => offer.price)].reduce(reducer)).reduce(reducer);
+
+export const getEventDateDatetime = (date) => dayjs(date).format(`YYYY-MM-DD`);
+
+export const getEventDateValue = (date) => dayjs(date).format(`MMM DD`).toUpperCase();
+
+export const getEventTimeDatetime = (date) => dayjs(date).format(`YYYY-MM-DDTHH:mm`);
+
+export const getEventTimeValue = (date) => dayjs(date).format(`HH:mm`);
+
+export const getEventInputTimeValue = (date) => dayjs(date).format(`YY/MM/DD HH:mm`);
