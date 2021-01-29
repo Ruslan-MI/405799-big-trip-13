@@ -25,23 +25,23 @@ export default class TripSort extends AbstractView {
   constructor(sortType) {
     super();
 
-    this._sortType = sortType;
+    this._type = sortType;
 
-    this._sortTypeChangeHandler = this._sortTypeChangeHandler.bind(this);
+    this._typeChangeHandler = this._typeChangeHandler.bind(this);
   }
 
   getTemplate() {
-    return createTripSortTemplate(this._sortType);
+    return createTripSortTemplate(this._type);
   }
 
-  setSortTypeChangeHandler(callback) {
-    this._callback.sortTypeChange = callback;
-    this.getElement().addEventListener(`change`, this._sortTypeChangeHandler);
+  setTypeChangeHandler(callback) {
+    this._callback.typeChange = callback;
+    this.getElement().addEventListener(`change`, this._typeChangeHandler);
   }
 
-  _sortTypeChangeHandler(evt) {
+  _typeChangeHandler(evt) {
     if (evt.target.matches(`input[type="radio"]`)) {
-      this._callback.sortTypeChange(evt.target.dataset.sortType);
+      this._callback.typeChange(evt.target.dataset.sortType);
     }
   }
 }

@@ -1,12 +1,12 @@
+export const EVENT_TYPES = [
+  `taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`, `check-in`, `sightseeing`, `restaurant`
+];
+
 export const RenderPosition = {
   AFTERBEGIN: `afterbegin`,
   AFTEREND: `afterend`,
   BEFOREEND: `beforeend`
 };
-
-export const EVENT_TYPES = [
-  `taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`, `check-in`, `sightseeing`, `restaurant`
-];
 
 export const UserAction = {
   UPDATE_EVENT: `UPDATE_EVENT`,

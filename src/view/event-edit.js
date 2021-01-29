@@ -63,7 +63,7 @@ const createEventSectionDestinationTemplate = (data) => {
   } = data.destination;
   const isDescription = Boolean(description);
   const isPictures = Boolean(pictures.length > 0);
-  const isDestinationSection = Boolean(isDescription || isPictures);
+  const isDestinationSection = isDescription || isPictures;
 
   if (isDestinationSection) {
     return `<section class="event__section  event__section--destination">
@@ -165,16 +165,18 @@ export default class EventEdit extends SmartView {
     this._destinations = StaticStore.getDestinations();
     this._startDatepicker = null;
     this._endDatepicker = null;
+    this._submitButton = this.getElement().querySelector(`.event__save-btn`);
+    this._cancelButton = this.getElement().querySelector(`.event__reset-btn`);
 
     this._rollupClickHandler = this._rollupClickHandler.bind(this);
-    this._editSubmitHandler = this._editSubmitHandler.bind(this);
+    this._submitHandler = this._submitHandler.bind(this);
     this._offersToggleHandler = this._offersToggleHandler.bind(this);
     this._destinationChangeHandler = this._destinationChangeHandler.bind(this);
     this._priceChangeHandler = this._priceChangeHandler.bind(this);
     this._typeChangeHandler = this._typeChangeHandler.bind(this);
     this._startTimeChangeHandler = this._startTimeChangeHandler.bind(this);
     this._endTimeChangeHandler = this._endTimeChangeHandler.bind(this);
-    this._editDeleteHandler = this._editDeleteHandler.bind(this);
+    this._deleteHandler = this._deleteHandler.bind(this);
     this._enableForm = this._enableForm.bind(this);
 
     this._setInnerHandlers();
@@ -189,21 +191,21 @@ export default class EventEdit extends SmartView {
     this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._rollupClickHandler);
   }
 
-  setEditSubmitHandler(callback) {
-    this._callback.editSubmit = callback;
-    this.getElement().querySelector(`.event--edit`).addEventListener(`submit`, this._editSubmitHandler);
+  setSubmitHandler(callback) {
+    this._callback.submit = callback;
+    this.getElement().querySelector(`.event--edit`).addEventListener(`submit`, this._submitHandler);
   }
 
-  setEditDeleteHandler(callback) {
-    this._callback.editDelete = callback;
-    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._editDeleteHandler);
+  setDeleteHandler(callback) {
+    this._callback.delete = callback;
+    this._cancelButton.addEventListener(`click`, this._deleteHandler);
   }
 
   restoreHandlers() {
     this._setInnerHandlers();
     this.setRollupClickHandler(this._callback.rollupClick);
-    this.setEditSubmitHandler(this._callback.editSubmit);
-    this.setEditDeleteHandler(this._callback.editDelete);
+    this.setSubmitHandler(this._callback.submit);
+    this.setDeleteHandler(this._callback.delete);
   }
 
   reset(event) {
@@ -225,18 +227,18 @@ export default class EventEdit extends SmartView {
   }
 
   resetForError() {
-    this.getElement().querySelector(`.event__save-btn`).textContent = `Save`;
-    this.getElement().querySelector(`.event__reset-btn`).textContent = `Delete`;
+    this._submitButton.textContent = `Save`;
+    this._cancelButton.textContent = `Delete`;
 
     this._shake(this._enableForm);
   }
 
   _disableSubmitButton() {
-    this.getElement().querySelector(`.event__save-btn`).disabled = true;
+    this._submitButton.disabled = true;
   }
 
   _enableSubmitButton() {
-    this.getElement().querySelector(`.event__save-btn`).disabled = false;
+    this._submitButton.disabled = false;
   }
 
   _disableForm() {
@@ -258,8 +260,10 @@ export default class EventEdit extends SmartView {
   }
 
   _setInnerHandlers() {
-    if (this.getElement().querySelector(`.event__available-offers`)) {
-      this.getElement().querySelector(`.event__available-offers`).addEventListener(`click`, this._offersToggleHandler);
+    const availableOffersContainer = this.getElement().querySelector(`.event__available-offers`);
+
+    if (availableOffersContainer) {
+      availableOffersContainer.addEventListener(`click`, this._offersToggleHandler);
     }
 
     this._setStartDatepicker();
@@ -371,26 +375,26 @@ export default class EventEdit extends SmartView {
     this._callback.rollupClick();
   }
 
-  _editSubmitHandler(evt) {
+  _submitHandler(evt) {
     evt.preventDefault();
 
     const requiredUpdate = getRequiredUpdate(this._data, this._event);
 
     if (requiredUpdate) {
       this._disableForm();
-      this._callback.editSubmit(requiredUpdate, this._data);
-      this.getElement().querySelector(`.event__save-btn`).textContent = `Saving...`;
+      this._callback.submit(requiredUpdate, this._data);
+      this._submitButton.textContent = `Saving...`;
       return;
     }
 
     this._callback.rollupClick();
   }
 
-  _editDeleteHandler(evt) {
+  _deleteHandler(evt) {
     evt.preventDefault();
 
     this._disableForm();
-    this._callback.editDelete(this._data);
-    this.getElement().querySelector(`.event__reset-btn`).textContent = `Deleting...`;
+    this._callback.delete(this._data);
+    this._cancelButton.textContent = `Deleting...`;
   }
 }

@@ -33,25 +33,29 @@ export default class TripHeader {
   _resetFilter() {
     remove(this._tripFiltersComponent);
 
-    this._tripFiltersComponent = new TripFiltersView(this._filterModel.getFilter(), this._eventsModel.getEvents());
+    this._tripFiltersComponent = new TripFiltersView(this._filterModel.getType(), this._eventsModel.getData());
 
     render(this._tripFiltersHeading, this._tripFiltersComponent, RenderPosition.AFTEREND);
 
-    this._tripFiltersComponent.setFilterTypeChangeHandler(this._handleChangeFilterType);
+    this._tripFiltersComponent.setTypeChangeHandler(this._handleChangeFilterType);
   }
 
   _resetTripInfo() {
     remove(this._tripInfoComponent);
 
-    if (this._eventsModel.getEvents().length !== 0) {
-      this._tripInfoComponent = new TripInfoView(this._eventsModel.getEvents());
+    const events = this._eventsModel.getData();
+
+    if (events.length !== 0) {
+      this._tripInfoComponent = new TripInfoView(events);
 
       render(this._infoContainer, this._tripInfoComponent, RenderPosition.AFTERBEGIN);
     }
   }
 
   _handleChangeFilterType(filterType) {
-    this._filterModel.setFilter(UpdateType.MAJOR, filterType);
+    this._filterModel.removeObserver(this._handleModelUpdate);
+    this._filterModel.setType(UpdateType.MAJOR, filterType);
+    this._filterModel.addObserver(this._handleModelUpdate);
   }
 
   _handleModelUpdate(updateType, data) {

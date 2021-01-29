@@ -2,7 +2,7 @@ import EventsModel from "./model/events.js";
 import FilterModel from "./model/filter.js";
 import TripTabsView from "./view/trip-tabs.js";
 import StatisticsView from "./view/statistics.js";
-import TripBoardPresenter from "./presenter/trip-board.js";
+import TripPresenter from "./presenter/trip.js";
 import TripHeaderPresenter from "./presenter/trip-header.js";
 import ApiNetwork from "./api.js";
 import {
@@ -40,10 +40,8 @@ let statisticsComponent = null;
 const filterModel = new FilterModel();
 const eventsModel = new EventsModel();
 
-filterModel.setFilter(null, defaultFilter);
-
 const tripHeaderPresenter = new TripHeaderPresenter(tripMain, tripFiltersHeading, filterModel, eventsModel);
-const tripBoardPresenter = new TripBoardPresenter(tripEvents, eventsModel, filterModel, apiNetwork);
+const tripPresenter = new TripPresenter(tripEvents, eventsModel, filterModel, apiNetwork);
 
 const resetTripTabs = () => {
   remove(tripTabsComponent);
@@ -52,49 +50,50 @@ const resetTripTabs = () => {
 
   render(tripTabsHeading, tripTabsComponent, RenderPosition.AFTEREND);
 
-  tripTabsComponent.setTripTabsClickHandler(showCurrentScreen);
+  tripTabsComponent.setClickHandler(handleTripTabsClick);
 };
 
-const showCurrentScreen = (tripTab) => {
+const handleTripTabsClick = (tripTab) => {
   currentTripTab = tripTab;
   resetTripTabs();
 
   switch (tripTab) {
     case TripTab.TABLE:
       remove(statisticsComponent);
-      tripBoardPresenter.init();
+      tripPresenter.init();
       break;
     case TripTab.STATS:
-      tripBoardPresenter.destroy();
-      statisticsComponent = new StatisticsView(eventsModel.getEvents());
+      tripPresenter.destroy();
+      statisticsComponent = new StatisticsView(eventsModel.getData());
       render(pageBodyContainer, statisticsComponent, RenderPosition.BEFOREEND);
       break;
   }
 };
 
 const eventAddClickHandler = () => {
+  filterModel.setType(UpdateType.MAJOR, defaultFilter);
+
   if (currentTripTab !== TripTab.TABLE) {
-    currentTripTab = TripTab.TABLE;
-    remove(statisticsComponent);
-    tripBoardPresenter.init();
+    handleTripTabsClick(TripTab.TABLE);
   }
 
-  resetTripTabs();
-  tripBoardPresenter.addEvent();
+  tripPresenter.addNewEvent();
 };
+
+filterModel.setType(UpdateType.MAJOR, defaultFilter);
 
 eventAddButton.addEventListener(`click`, eventAddClickHandler);
 
-tripBoardPresenter.init();
+tripPresenter.init();
 
 apiNetwork.getAllData()
   .then((events) => {
-    eventsModel.setEvents(UpdateType.INIT, events);
+    eventsModel.setData(UpdateType.INIT, events);
     resetTripTabs();
     tripHeaderPresenter.init();
   })
   .catch(() => {
-    eventsModel.setEvents(UpdateType.INIT, []);
+    eventsModel.setData(UpdateType.INIT, []);
     resetTripTabs();
     tripHeaderPresenter.init();
   });
