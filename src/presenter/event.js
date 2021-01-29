@@ -18,48 +18,48 @@ const Mode = {
 
 export default class Event {
   constructor(eventListComponent, handleViewAction, handleChangeMode) {
-    this._eventListComponent = eventListComponent;
+    this._listComponent = eventListComponent;
     this._handleViewAction = handleViewAction;
     this._handleChangeMode = handleChangeMode;
     this._mode = Mode.DEFAULT;
 
-    this._eventItemComponent = null;
-    this._eventEditComponent = null;
+    this._itemComponent = null;
+    this._editComponent = null;
 
     this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
-    this._handleEventItemRollupClick = this._handleEventItemRollupClick.bind(this);
-    this._handleEventEditRollupClick = this._handleEventEditRollupClick.bind(this);
+    this._handleItemRollupClick = this._handleItemRollupClick.bind(this);
+    this._handleEditRollupClick = this._handleEditRollupClick.bind(this);
     this._handleFavoriteClick = this._handleFavoriteClick.bind(this);
     this._handleEditSubmit = this._handleEditSubmit.bind(this);
     this._handleEditDelete = this._handleEditDelete.bind(this);
   }
 
   init(event) {
-    this._event = event;
+    this._data = event;
 
-    const createdEventItemComponent = this._eventItemComponent;
-    const createdEventEditComponent = this._eventEditComponent;
+    const createdEventItemComponent = this._itemComponent;
+    const createdEventEditComponent = this._editComponent;
 
-    this._eventItemComponent = new EventItemView(event);
-    this._eventEditComponent = new EventEditView(event);
+    this._itemComponent = new EventItemView(event);
+    this._editComponent = new EventEditView(event);
 
-    this._eventItemComponent.setRollupClickHandler(this._handleEventItemRollupClick);
-    this._eventEditComponent.setRollupClickHandler(this._handleEventEditRollupClick);
-    this._eventItemComponent.setFavoriteClickHandler(this._handleFavoriteClick);
-    this._eventEditComponent.setEditSubmitHandler(this._handleEditSubmit);
-    this._eventEditComponent.setEditDeleteHandler(this._handleEditDelete);
+    this._itemComponent.setRollupClickHandler(this._handleItemRollupClick);
+    this._editComponent.setRollupClickHandler(this._handleEditRollupClick);
+    this._itemComponent.setFavoriteClickHandler(this._handleFavoriteClick);
+    this._editComponent.setSubmitHandler(this._handleEditSubmit);
+    this._editComponent.setDeleteHandler(this._handleEditDelete);
 
     if (createdEventItemComponent === null || createdEventEditComponent === null) {
-      render(this._eventListComponent, this._eventItemComponent, RenderPosition.BEFOREEND);
+      render(this._listComponent, this._itemComponent, RenderPosition.BEFOREEND);
       return;
     }
 
     if (this._mode === Mode.DEFAULT) {
-      replace(this._eventItemComponent, createdEventItemComponent);
+      replace(this._itemComponent, createdEventItemComponent);
     }
 
     if (this._mode === Mode.EDITING) {
-      replace(this._eventEditComponent, createdEventEditComponent);
+      replace(this._editComponent, createdEventEditComponent);
     }
 
     remove(createdEventItemComponent);
@@ -67,51 +67,51 @@ export default class Event {
   }
 
   clear() {
-    remove(this._eventItemComponent);
-    remove(this._eventEditComponent);
+    remove(this._itemComponent);
+    remove(this._editComponent);
   }
 
   resetView() {
     if (this._mode !== Mode.DEFAULT) {
-      this._handleEventEditRollupClick();
+      this._handleEditRollupClick();
     }
   }
 
   resetForError() {
     switch (this._mode) {
       case Mode.DEFAULT:
-        this._eventItemComponent.resetForError();
+        this._itemComponent.resetForError();
         break;
       case Mode.EDITING:
-        this._eventEditComponent.resetForError();
+        this._editComponent.resetForError();
         break;
     }
   }
 
-  _handleEventItemRollupClick() {
-    replace(this._eventEditComponent, this._eventItemComponent);
+  _handleItemRollupClick() {
+    replace(this._editComponent, this._itemComponent);
     document.addEventListener(`keydown`, this._escKeyDownHandler);
     this._handleChangeMode();
     this._mode = Mode.EDITING;
   }
 
-  _handleEventEditRollupClick() {
-    replace(this._eventItemComponent, this._eventEditComponent);
+  _handleEditRollupClick() {
+    replace(this._itemComponent, this._editComponent);
     document.removeEventListener(`keydown`, this._escKeyDownHandler);
     this._mode = Mode.DEFAULT;
-    this._eventEditComponent.reset(this._event);
+    this._editComponent.reset(this._data);
   }
 
   _escKeyDownHandler(evt) {
     if (evt.key === `Escape` || evt.key === `Esc`) {
       evt.preventDefault();
-      this._handleEventEditRollupClick();
+      this._handleEditRollupClick();
     }
   }
 
   _handleFavoriteClick() {
-    this._handleViewAction(UserAction.UPDATE_EVENT, UpdateType.PATCH, Object.assign({}, this._event, {
-      isFavorite: !this._event.isFavorite
+    this._handleViewAction(UserAction.UPDATE_EVENT, UpdateType.PATCH, Object.assign({}, this._data, {
+      isFavorite: !this._data.isFavorite
     }));
   }
 

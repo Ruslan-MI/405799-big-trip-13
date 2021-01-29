@@ -63,7 +63,7 @@ const createEventSectionDestinationTemplate = (data) => {
   } = data.destination;
   const isDescription = Boolean(description);
   const isPictures = Boolean(pictures.length > 0);
-  const isDestinationSection = Boolean(isDescription || isPictures);
+  const isDestinationSection = isDescription || isPictures;
 
   if (isDestinationSection) {
     return `<section class="event__section  event__section--destination">
@@ -157,10 +157,7 @@ export default class EventAdd extends SmartView {
     super();
 
     this._allOffers = StaticStore.getOffers();
-    this._availableOffers = getAvailableOffers(this._allOffers, this._data.type);
     this._destinations = StaticStore.getDestinations();
-    this._startDatepicker = null;
-    this._endDatepicker = null;
 
     this._data = {
       type: EVENT_TYPES[0],
@@ -172,14 +169,19 @@ export default class EventAdd extends SmartView {
       isFavorite: false
     };
 
-    this._addSubmitHandler = this._addSubmitHandler.bind(this);
+    this._availableOffers = getAvailableOffers(this._allOffers, this._data.type);
+    this._startDatepicker = null;
+    this._endDatepicker = null;
+    this._submitButton = this.getElement().querySelector(`.event__save-btn`);
+
+    this._submitHandler = this._submitHandler.bind(this);
     this._offersToggleHandler = this._offersToggleHandler.bind(this);
     this._destinationChangeHandler = this._destinationChangeHandler.bind(this);
     this._priceChangeHandler = this._priceChangeHandler.bind(this);
     this._typeChangeHandler = this._typeChangeHandler.bind(this);
     this._startTimeChangeHandler = this._startTimeChangeHandler.bind(this);
     this._endTimeChangeHandler = this._endTimeChangeHandler.bind(this);
-    this._addCancelHandler = this._addCancelHandler.bind(this);
+    this._cancelHandler = this._cancelHandler.bind(this);
     this._enableForm = this._enableForm.bind(this);
 
     this._setInnerHandlers();
@@ -189,20 +191,20 @@ export default class EventAdd extends SmartView {
     return createAddEditTemplate(this._data, this._availableOffers, this._destinations);
   }
 
-  setAddSubmitHandler(callback) {
-    this._callback.addSubmit = callback;
-    this.getElement().querySelector(`.event--edit`).addEventListener(`submit`, this._addSubmitHandler);
+  setSubmitHandler(callback) {
+    this._callback.submit = callback;
+    this.getElement().querySelector(`.event--edit`).addEventListener(`submit`, this._submitHandler);
   }
 
-  setAddCancelHandler(callback) {
-    this._callback.addCancel = callback;
-    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._addCancelHandler);
+  setCancelHandler(callback) {
+    this._callback.cancel = callback;
+    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._cancelHandler);
   }
 
   restoreHandlers() {
     this._setInnerHandlers();
-    this.setAddSubmitHandler(this._callback.addSubmit);
-    this.setAddCancelHandler(this._callback.addCancel);
+    this.setSubmitHandler(this._callback.submit);
+    this.setCancelHandler(this._callback.cancel);
   }
 
   removeElement() {
@@ -220,17 +222,17 @@ export default class EventAdd extends SmartView {
   }
 
   resetForError() {
-    this.getElement().querySelector(`.event__save-btn`).textContent = `Save`;
+    this._submitButton.textContent = `Save`;
 
     this._shake(this._enableForm);
   }
 
   _disableSubmitButton() {
-    this.getElement().querySelector(`.event__save-btn`).disabled = true;
+    this._submitButton.disabled = true;
   }
 
   _enableSubmitButton() {
-    this.getElement().querySelector(`.event__save-btn`).disabled = false;
+    this._submitButton.disabled = false;
   }
 
   _disableForm() {
@@ -252,8 +254,10 @@ export default class EventAdd extends SmartView {
   }
 
   _setInnerHandlers() {
-    if (this.getElement().querySelector(`.event__available-offers`)) {
-      this.getElement().querySelector(`.event__available-offers`).addEventListener(`click`, this._offersToggleHandler);
+    const availableOffersContainer = this.getElement().querySelector(`.event__available-offers`);
+
+    if (availableOffersContainer) {
+      availableOffersContainer.addEventListener(`click`, this._offersToggleHandler);
     }
 
     this._setStartDatepicker();
@@ -361,17 +365,17 @@ export default class EventAdd extends SmartView {
     });
   }
 
-  _addSubmitHandler(evt) {
+  _submitHandler(evt) {
     evt.preventDefault();
 
     this._disableForm();
-    this._callback.addSubmit(UpdateType.MAJOR, this._data);
-    this.getElement().querySelector(`.event__save-btn`).textContent = `Saving...`;
+    this._callback.submit(UpdateType.MAJOR, this._data);
+    this._submitButton.textContent = `Saving...`;
   }
 
-  _addCancelHandler(evt) {
+  _cancelHandler(evt) {
     evt.preventDefault();
 
-    this._callback.addCancel();
+    this._callback.cancel();
   }
 }

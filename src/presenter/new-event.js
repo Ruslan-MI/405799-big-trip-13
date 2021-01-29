@@ -10,10 +10,11 @@ import {
 
 export default class NewEvent {
   constructor(eventListComponent, handleViewAction) {
-    this._eventListComponent = eventListComponent;
+    this._listComponent = eventListComponent;
     this._handleViewAction = handleViewAction;
 
-    this._eventAddComponent = null;
+    this._addComponent = null;
+    this._addButton = document.querySelector(`.trip-main__event-add-btn`);
 
     this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
     this._handleAddSubmit = this._handleAddSubmit.bind(this);
@@ -21,40 +22,40 @@ export default class NewEvent {
   }
 
   init() {
-    this._disableEventAddButton();
+    this._disableAddButton();
 
-    this._eventAddComponent = new EventAddView();
+    this._addComponent = new EventAddView();
 
-    this._eventAddComponent.setAddSubmitHandler(this._handleAddSubmit);
-    this._eventAddComponent.setAddCancelHandler(this._handleAddCancel);
+    this._addComponent.setSubmitHandler(this._handleAddSubmit);
+    this._addComponent.setCancelHandler(this._handleAddCancel);
 
-    render(this._eventListComponent, this._eventAddComponent, RenderPosition.AFTERBEGIN);
+    render(this._listComponent, this._addComponent, RenderPosition.AFTERBEGIN);
 
     document.addEventListener(`keydown`, this._escKeyDownHandler);
   }
 
   clear() {
-    if (this._eventAddComponent) {
-      this.enableEventAddButton();
+    if (this._addComponent) {
+      this.enableAddButton();
 
-      remove(this._eventAddComponent);
+      remove(this._addComponent);
 
-      this._eventAddComponent = null;
+      this._addComponent = null;
 
       document.removeEventListener(`keydown`, this._escKeyDownHandler);
     }
   }
 
   resetForError() {
-    this._eventAddComponent.resetForError();
+    this._addComponent.resetForError();
   }
 
-  _disableEventAddButton() {
-    document.querySelector(`.trip-main__event-add-btn`).disabled = true;
+  _disableAddButton() {
+    this._addButton.disabled = true;
   }
 
-  enableEventAddButton() {
-    document.querySelector(`.trip-main__event-add-btn`).disabled = false;
+  enableAddButton() {
+    this._addButton.disabled = false;
   }
 
   _escKeyDownHandler(evt) {

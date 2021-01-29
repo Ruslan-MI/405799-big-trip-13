@@ -21,15 +21,13 @@ import {
   filter
 } from "../utils/common.js";
 
-export default class TripBoard {
+export default class Trip {
   constructor(tripGeneralContainer, eventsModel, filterModel, apiNetwork) {
     this._generalContainer = tripGeneralContainer;
     this._eventsModel = eventsModel;
     this._filterModel = filterModel;
     this._apiNetwork = apiNetwork;
     this._eventPresenters = {};
-    this._defaultFilter = this._filterModel.getFilter();
-    this._currentFilter = this._defaultFilter;
     this._defaultSortType = SortType.DAY;
     this._currentSortType = this._defaultSortType;
     this._isLoading = true;
@@ -37,7 +35,7 @@ export default class TripBoard {
     this._emptyListMessageComponent = new EmptyListMessageView();
     this._eventListComponent = new EventListView();
     this._loadingMessageComponent = new LoadingMessageView();
-    this._tripSortComponent = null;
+    this._sortComponent = null;
 
     this._handleViewAction = this._handleViewAction.bind(this);
     this._handleModelUpdate = this._handleModelUpdate.bind(this);
@@ -52,7 +50,7 @@ export default class TripBoard {
     this._eventsModel.addObserver(this._handleModelUpdate);
     this._filterModel.addObserver(this._handleModelUpdate);
 
-    this._renderTrip();
+    this._renderBoard();
   }
 
   destroy() {
@@ -61,12 +59,11 @@ export default class TripBoard {
 
     this._currentSortType = this._defaultSortType;
 
-    this._clearTrip();
+    this._clearBoard();
   }
 
-  addEvent() {
+  addNewEvent() {
     this._currentSortType = this._defaultSortType;
-    this._filterModel.setFilter(UpdateType.MAJOR, this._defaultFilter);
 
     if (this._getEvents().length === 0) {
       remove(this._emptyListMessageComponent);
@@ -80,8 +77,8 @@ export default class TripBoard {
   }
 
   _getEvents() {
-    const filterType = this._filterModel.getFilter();
-    const events = this._eventsModel.getEvents();
+    const filterType = this._filterModel.getType();
+    const events = this._eventsModel.getData();
     const filteredEvents = filter[filterType](events);
 
     switch (this._currentSortType) {
@@ -105,11 +102,11 @@ export default class TripBoard {
   }
 
   _renderTripSort() {
-    this._tripSortComponent = new TripSortView(this._currentSortType);
+    this._sortComponent = new TripSortView(this._currentSortType);
 
-    render(this._generalContainer, this._tripSortComponent, RenderPosition.BEFOREEND);
+    render(this._generalContainer, this._sortComponent, RenderPosition.BEFOREEND);
 
-    this._tripSortComponent.setSortTypeChangeHandler(this._handleChangeSortType);
+    this._sortComponent.setTypeChangeHandler(this._handleChangeSortType);
   }
 
   _renderEventList() {
@@ -126,22 +123,18 @@ export default class TripBoard {
   }
 
   _renderEvents() {
-    this._getEvents().forEach((event) => {
-      this._renderEvent(event);
-    });
+    this._getEvents().forEach((event) => this._renderEvent(event));
   }
 
   _clearEvents() {
-    Object.values(this._eventPresenters).forEach((presenter) => {
-      presenter.clear();
-    });
+    Object.values(this._eventPresenters).forEach((presenter) => presenter.clear());
 
     this._eventPresenters = {};
 
     this._newEventPresenter.clear();
   }
 
-  _renderTrip() {
+  _renderBoard() {
     if (this._isLoading) {
       this._renderLoadingMessage();
       return;
@@ -158,11 +151,11 @@ export default class TripBoard {
 
   }
 
-  _clearTrip() {
+  _clearBoard() {
     this._clearEvents();
 
     remove(this._eventListComponent);
-    remove(this._tripSortComponent);
+    remove(this._sortComponent);
     remove(this._emptyListMessageComponent);
     remove(this._loadingMessageComponent);
   }
@@ -172,7 +165,7 @@ export default class TripBoard {
       case UserAction.UPDATE_EVENT:
         this._apiNetwork.updateEvent(update)
           .then((response) => {
-            this._eventsModel.updateEvent(updateType, response);
+            this._eventsModel.updateData(updateType, response);
           })
           .catch(() => {
             this._eventPresenters[update.id].resetForError();
@@ -181,7 +174,7 @@ export default class TripBoard {
       case UserAction.ADD_EVENT:
         this._apiNetwork.addEvent(update).
           then((response) => {
-            this._eventsModel.addEvent(updateType, response);
+            this._eventsModel.addData(updateType, response);
           })
           .catch(() => {
             this._newEventPresenter.resetForError();
@@ -190,7 +183,7 @@ export default class TripBoard {
       case UserAction.DELETE_EVENT:
         this._apiNetwork.deleteEvent(update).
           then(() => {
-            this._eventsModel.deleteEvent(updateType, update);
+            this._eventsModel.deleteData(updateType, update);
           })
           .catch(() => {
             this._eventPresenters[update.id].resetForError();
@@ -200,8 +193,7 @@ export default class TripBoard {
   }
 
   _handleModelUpdate(updateType, data) {
-    if (typeof data === `string` && this._currentFilter !== data) {
-      this._currentFilter = data;
+    if (typeof data === `string`) {
       this._currentSortType = this._defaultSortType;
     }
 
@@ -215,14 +207,14 @@ export default class TripBoard {
         this._renderEvents();
         break;
       case UpdateType.MAJOR:
-        this._clearTrip();
-        this._renderTrip();
+        this._clearBoard();
+        this._renderBoard();
         break;
       case UpdateType.INIT:
         this._isLoading = false;
-        this._newEventPresenter.enableEventAddButton();
-        this._clearTrip();
-        this._renderTrip();
+        this._newEventPresenter.enableAddButton();
+        this._clearBoard();
+        this._renderBoard();
         break;
     }
   }

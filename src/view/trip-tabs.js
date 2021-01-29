@@ -19,26 +19,26 @@ export default class TripTabs extends AbstractView {
   constructor(currentTripTab) {
     super();
 
-    this._currentTripTab = currentTripTab;
+    this._currentState = currentTripTab;
 
-    this._tripTabsClickHandler = this._tripTabsClickHandler.bind(this);
+    this._clickHandler = this._clickHandler.bind(this);
   }
 
   getTemplate() {
-    return createTripTabsTemplate(this._currentTripTab);
+    return createTripTabsTemplate(this._currentState);
   }
 
-  setTripTabsClickHandler(callback) {
-    this._callback.tripTabsClick = callback;
+  setClickHandler(callback) {
+    this._callback.click = callback;
 
-    this.getElement().addEventListener(`click`, this._tripTabsClickHandler);
+    this.getElement().addEventListener(`click`, this._clickHandler);
   }
 
-  _tripTabsClickHandler(evt) {
+  _clickHandler(evt) {
+    evt.preventDefault();
+
     if (evt.target.matches(`.trip-tabs__btn:not(.trip-tabs__btn--active)`)) {
-      evt.preventDefault();
-
-      this._callback.tripTabsClick(evt.target.dataset.tripTab);
+      this._callback.click(evt.target.dataset.tripTab);
     }
   }
 }

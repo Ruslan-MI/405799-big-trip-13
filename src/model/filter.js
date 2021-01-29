@@ -4,16 +4,16 @@ export default class Filter extends Observer {
   constructor() {
     super();
 
-    this._currentFilterType = null;
+    this._currentType = null;
   }
 
-  setFilter(updateType, filter) {
-    this._currentFilterType = filter;
+  setType(updateType, filter) {
+    this._currentType = filter;
 
     this._notify(updateType, filter);
   }
 
-  getFilter() {
-    return this._currentFilterType;
+  getType() {
+    return this._currentType;
   }
 }
