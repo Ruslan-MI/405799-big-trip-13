@@ -20,12 +20,12 @@ export default class TripHeader {
 
     this._handleChangeFilterType = this._handleChangeFilterType.bind(this);
     this._handleModelUpdate = this._handleModelUpdate.bind(this);
-
-    this._filterModel.addObserver(this._handleModelUpdate);
-    this._eventsModel.addObserver(this._handleModelUpdate);
   }
 
   init() {
+    this._filterModel.addObserver(this._handleModelUpdate);
+    this._eventsModel.addObserver(this._handleModelUpdate);
+
     this._resetTripInfo();
     this._resetFilter();
   }

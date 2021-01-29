@@ -17,16 +17,14 @@ const Mode = {
 };
 
 export default class Event {
-  constructor(eventListComponent, handleViewAction, handleChangeMode, allOffers, cityExpositions) {
+  constructor(eventListComponent, handleViewAction, handleChangeMode) {
     this._eventListComponent = eventListComponent;
     this._handleViewAction = handleViewAction;
     this._handleChangeMode = handleChangeMode;
-    this._allOffers = allOffers;
-    this._cityExpositions = cityExpositions;
+    this._mode = Mode.DEFAULT;
 
     this._eventItemComponent = null;
     this._eventEditComponent = null;
-    this._mode = Mode.DEFAULT;
 
     this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
     this._handleEventItemRollupClick = this._handleEventItemRollupClick.bind(this);
@@ -43,7 +41,7 @@ export default class Event {
     const createdEventEditComponent = this._eventEditComponent;
 
     this._eventItemComponent = new EventItemView(event);
-    this._eventEditComponent = new EventEditView(event, this._allOffers, this._cityExpositions);
+    this._eventEditComponent = new EventEditView(event);
 
     this._eventItemComponent.setRollupClickHandler(this._handleEventItemRollupClick);
     this._eventEditComponent.setRollupClickHandler(this._handleEventEditRollupClick);
@@ -79,6 +77,17 @@ export default class Event {
     }
   }
 
+  resetForError() {
+    switch (this._mode) {
+      case Mode.DEFAULT:
+        this._eventItemComponent.resetForError();
+        break;
+      case Mode.EDITING:
+        this._eventEditComponent.resetForError();
+        break;
+    }
+  }
+
   _handleEventItemRollupClick() {
     replace(this._eventEditComponent, this._eventItemComponent);
     document.addEventListener(`keydown`, this._escKeyDownHandler);
@@ -107,12 +116,10 @@ export default class Event {
   }
 
   _handleEditSubmit(updateType, changedEvent) {
-    this._handleEventEditRollupClick();
     this._handleViewAction(UserAction.UPDATE_EVENT, updateType, changedEvent);
   }
 
   _handleEditDelete(deletedEvent) {
-    this._handleEventEditRollupClick();
     this._handleViewAction(UserAction.DELETE_EVENT, UpdateType.MAJOR, deletedEvent);
   }
 }

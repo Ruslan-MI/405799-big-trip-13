@@ -4,23 +4,15 @@ import {
   remove
 } from "../utils/dom-actions.js";
 import {
-  getID
-} from "../mock/event.js";
-import {
   RenderPosition,
-  UpdateType,
   UserAction
 } from "../const.js";
 
 export default class NewEvent {
-  constructor(eventListComponent, handleViewAction, handleChangeMode, allOffers, cityExpositions) {
+  constructor(eventListComponent, handleViewAction) {
     this._eventListComponent = eventListComponent;
     this._handleViewAction = handleViewAction;
-    this._handleChangeMode = handleChangeMode;
-    this._allOffers = allOffers;
-    this._cityExpositions = cityExpositions;
 
-    this._button = null;
     this._eventAddComponent = null;
 
     this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
@@ -28,12 +20,10 @@ export default class NewEvent {
     this._handleAddCancel = this._handleAddCancel.bind(this);
   }
 
-  init(button) {
-    this._button = button;
+  init() {
+    this._disableEventAddButton();
 
-    this._button.disabled = true;
-
-    this._eventAddComponent = new EventAddView(this._allOffers, this._cityExpositions);
+    this._eventAddComponent = new EventAddView();
 
     this._eventAddComponent.setAddSubmitHandler(this._handleAddSubmit);
     this._eventAddComponent.setAddCancelHandler(this._handleAddCancel);
@@ -45,7 +35,7 @@ export default class NewEvent {
 
   clear() {
     if (this._eventAddComponent) {
-      this._button.disabled = false;
+      this.enableEventAddButton();
 
       remove(this._eventAddComponent);
 
@@ -53,6 +43,18 @@ export default class NewEvent {
 
       document.removeEventListener(`keydown`, this._escKeyDownHandler);
     }
+  }
+
+  resetForError() {
+    this._eventAddComponent.resetForError();
+  }
+
+  _disableEventAddButton() {
+    document.querySelector(`.trip-main__event-add-btn`).disabled = true;
+  }
+
+  enableEventAddButton() {
+    document.querySelector(`.trip-main__event-add-btn`).disabled = false;
   }
 
   _escKeyDownHandler(evt) {
@@ -64,16 +66,10 @@ export default class NewEvent {
   }
 
   _handleAddSubmit(updateType, addedEvent) {
-    this._handleViewAction(UserAction.ADD_EVENT, updateType, Object.assign({}, addedEvent, {
-      id: getID()
-    }));
-
-    this.clear();
+    this._handleViewAction(UserAction.ADD_EVENT, updateType, addedEvent);
   }
 
   _handleAddCancel() {
-    this._handleViewAction(UserAction.ADD_EVENT, UpdateType.MAJOR, null);
-
     this.clear();
   }
 }
