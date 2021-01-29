@@ -58,10 +58,8 @@ export default class TripHeader {
     this._filterModel.addObserver(this._handleModelUpdate);
   }
 
-  _handleModelUpdate(updateType, data) {
-    if (typeof data !== `string`) {
-      this._resetTripInfo();
-    }
+  _handleModelUpdate(updateType) {
+    this._resetTripInfo();
 
     if (updateType === UpdateType.MAJOR) {
       this._resetFilter();
