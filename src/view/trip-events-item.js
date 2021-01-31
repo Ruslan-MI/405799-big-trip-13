@@ -58,9 +58,9 @@ const createTripEventsItemTemplate = (data) => {
 };
 
 export default class EventItem extends AbstractView {
-  constructor(event) {
+  constructor(data) {
     super();
-    this._event = event;
+    this._data = data;
     this._favoriteButton = this.getElement().querySelector(`.event__favorite-btn`);
 
     this._rollupClickHandler = this._rollupClickHandler.bind(this);
@@ -69,7 +69,7 @@ export default class EventItem extends AbstractView {
   }
 
   getTemplate() {
-    return createTripEventsItemTemplate(this._event);
+    return createTripEventsItemTemplate(this._data);
   }
 
   setRollupClickHandler(callback) {

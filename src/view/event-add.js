@@ -184,6 +184,7 @@ export default class EventAdd extends SmartView {
     this._endTimeChangeHandler = this._endTimeChangeHandler.bind(this);
     this._cancelHandler = this._cancelHandler.bind(this);
     this._enableForm = this._enableForm.bind(this);
+    this._enableSubmitButton = this._enableSubmitButton.bind(this);
 
     this._setInnerHandlers();
   }
@@ -222,8 +223,14 @@ export default class EventAdd extends SmartView {
     }
   }
 
-  resetForError() {
-    this._submitButton.textContent = `Save`;
+  resetForError(isLeaveInputsDisabled) {
+    this.getElement().querySelector(`.event__save-btn`).textContent = `Save`;
+
+    if (isLeaveInputsDisabled) {
+      this._shake(this._enableSubmitButton);
+
+      return;
+    }
 
     this._shake(this._enableForm);
   }
@@ -240,18 +247,16 @@ export default class EventAdd extends SmartView {
     this.getElement().querySelectorAll(`input`).forEach((input) => {
       input.disabled = true;
     });
-    this.getElement().querySelectorAll(`button`).forEach((button) => {
-      button.disabled = true;
-    });
+
+    this._disableSubmitButton();
   }
 
   _enableForm() {
     this.getElement().querySelectorAll(`input`).forEach((input) => {
       input.disabled = false;
     });
-    this.getElement().querySelectorAll(`button`).forEach((button) => {
-      button.disabled = false;
-    });
+
+    this._enableSubmitButton();
   }
 
   _setInnerHandlers() {
@@ -370,8 +375,8 @@ export default class EventAdd extends SmartView {
     evt.preventDefault();
 
     this._disableForm();
+    this.getElement().querySelector(`.event__save-btn`).textContent = `Saving...`;
     this._callback.submit(UpdateType.MAJOR, this._data);
-    this._submitButton.textContent = `Saving...`;
   }
 
   _cancelHandler(evt) {

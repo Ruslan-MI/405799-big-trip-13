@@ -157,10 +157,10 @@ const createEventEditTemplate = (data, availableOffers, destinations) => {
 };
 
 export default class EventEdit extends SmartView {
-  constructor(event) {
+  constructor(data) {
     super();
-    this._event = event;
-    this._data = event;
+    this._sourceData = data;
+    this._data = data;
     this._allOffers = StaticStore.getOffers();
     this._availableOffers = getAvailableOffers(this._allOffers, this._data.type);
     this._destinations = StaticStore.getDestinations();
@@ -179,6 +179,7 @@ export default class EventEdit extends SmartView {
     this._endTimeChangeHandler = this._endTimeChangeHandler.bind(this);
     this._deleteHandler = this._deleteHandler.bind(this);
     this._enableForm = this._enableForm.bind(this);
+    this._enableButtons = this._enableButtons.bind(this);
 
     this._setInnerHandlers();
   }
@@ -209,10 +210,6 @@ export default class EventEdit extends SmartView {
     this.setDeleteHandler(this._callback.delete);
   }
 
-  reset(event) {
-    this.updateData(event, true);
-  }
-
   removeElement() {
     super.removeElement();
 
@@ -227,9 +224,15 @@ export default class EventEdit extends SmartView {
     }
   }
 
-  resetForError() {
-    this._submitButton.textContent = `Save`;
-    this._cancelButton.textContent = `Delete`;
+  resetForError(isLeaveInputsDisabled) {
+    this.getElement().querySelector(`.event__save-btn`).textContent = `Save`;
+    this.getElement().querySelector(`.event__reset-btn`).textContent = `Delete`;
+
+    if (isLeaveInputsDisabled) {
+      this._shake(this._enableButtons);
+
+      return;
+    }
 
     this._shake(this._enableForm);
   }
@@ -242,11 +245,21 @@ export default class EventEdit extends SmartView {
     this._submitButton.disabled = false;
   }
 
+  _enableCancelButton() {
+    this._cancelButton.disabled = false;
+  }
+
+  _enableButtons() {
+    this._enableSubmitButton();
+    this._enableCancelButton();
+  }
+
   _disableForm() {
     this.getElement().querySelectorAll(`input`).forEach((input) => {
       input.disabled = true;
     });
-    this.getElement().querySelectorAll(`button`).forEach((button) => {
+
+    this.getElement().querySelectorAll(`button:not(.event__rollup-btn)`).forEach((button) => {
       button.disabled = true;
     });
   }
@@ -255,9 +268,8 @@ export default class EventEdit extends SmartView {
     this.getElement().querySelectorAll(`input`).forEach((input) => {
       input.disabled = false;
     });
-    this.getElement().querySelectorAll(`button`).forEach((button) => {
-      button.disabled = false;
-    });
+
+    this._enableButtons();
   }
 
   _setInnerHandlers() {
@@ -379,12 +391,12 @@ export default class EventEdit extends SmartView {
   _submitHandler(evt) {
     evt.preventDefault();
 
-    const requiredUpdate = getRequiredUpdate(this._data, this._event);
+    const requiredUpdate = getRequiredUpdate(this._data, this._sourceData);
 
     if (requiredUpdate) {
       this._disableForm();
+      this.getElement().querySelector(`.event__save-btn`).textContent = `Saving...`;
       this._callback.submit(requiredUpdate, this._data);
-      this._submitButton.textContent = `Saving...`;
       return;
     }
 
@@ -395,7 +407,7 @@ export default class EventEdit extends SmartView {
     evt.preventDefault();
 
     this._disableForm();
+    this.getElement().querySelector(`.event__reset-btn`).textContent = `Deleting...`;
     this._callback.delete(this._data);
-    this._cancelButton.textContent = `Deleting...`;
   }
 }

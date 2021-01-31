@@ -22,11 +22,11 @@ import {
 } from "../utils/common.js";
 
 export default class Trip {
-  constructor(tripGeneralContainer, eventsModel, filterModel, apiNetwork) {
+  constructor(tripGeneralContainer, eventsModel, filterModel, api) {
     this._generalContainer = tripGeneralContainer;
     this._eventsModel = eventsModel;
     this._filterModel = filterModel;
-    this._apiNetwork = apiNetwork;
+    this._api = api;
     this._eventPresenters = {};
     this._defaultSortType = SortType.DAY;
     this._currentSortType = this._defaultSortType;
@@ -163,7 +163,7 @@ export default class Trip {
   _handleViewAction(userAction, updateType, update) {
     switch (userAction) {
       case UserAction.UPDATE_EVENT:
-        this._apiNetwork.updateEvent(update)
+        this._api.updateEvent(update)
           .then((response) => {
             this._eventsModel.updateData(updateType, response);
           })
@@ -172,7 +172,7 @@ export default class Trip {
           });
         break;
       case UserAction.ADD_EVENT:
-        this._apiNetwork.addEvent(update)
+        this._api.addEvent(update)
           .then((response) => {
             this._eventsModel.addData(updateType, response);
           })
@@ -181,7 +181,7 @@ export default class Trip {
           });
         break;
       case UserAction.DELETE_EVENT:
-        this._apiNetwork.deleteEvent(update)
+        this._api.deleteEvent(update)
           .then(() => {
             this._eventsModel.deleteData(updateType, update);
           })
