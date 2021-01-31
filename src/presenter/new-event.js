@@ -4,6 +4,12 @@ import {
   remove
 } from "../utils/dom-actions.js";
 import {
+  isOnline
+} from "../utils/common.js";
+import {
+  toast
+} from "../utils/toast/toast.js";
+import {
   RenderPosition,
   UserAction
 } from "../const.js";
@@ -46,8 +52,8 @@ export default class NewEvent {
     }
   }
 
-  resetForError() {
-    this._addComponent.resetForError();
+  resetForError(isLeaveInputsDisabled) {
+    this._addComponent.resetForError(isLeaveInputsDisabled);
   }
 
   _disableAddButton() {
@@ -67,6 +73,14 @@ export default class NewEvent {
   }
 
   _handleAddSubmit(updateType, addedEvent) {
+    if (!isOnline()) {
+      toast(`You can't save event offline`);
+
+      this.resetForError(true);
+
+      return;
+    }
+
     this._handleViewAction(UserAction.ADD_EVENT, updateType, addedEvent);
   }
 

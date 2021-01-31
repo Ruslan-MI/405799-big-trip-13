@@ -4,7 +4,9 @@ import TripTabsView from "./view/trip-tabs.js";
 import StatisticsView from "./view/statistics.js";
 import TripPresenter from "./presenter/trip.js";
 import TripHeaderPresenter from "./presenter/trip-header.js";
-import ApiNetwork from "./api.js";
+import Api from "./api/api.js";
+import Store from "./api/store.js";
+import Provider from "./api/provider.js";
 import {
   RenderPosition,
   TripTab,
@@ -15,9 +17,20 @@ import {
   render,
   remove
 } from "./utils/dom-actions.js";
+import {
+  isOnline,
+  removeOfflineTransparent,
+  showOfflineTransparent
+} from "./utils/common.js";
+import {
+  toast
+} from "./utils/toast/toast.js";
 
 const AUTHORIZATION = `Basic 64nz2ik5a7razfa`;
 const END_POINT = `https://13.ecmascript.pages.academy/big-trip`;
+const STORE_PREFIX = `big-trip-localstorage`;
+const STORE_VER = `v13`;
+const STORE_NAME = `${STORE_PREFIX}-${STORE_VER}`;
 
 const pageHeader = document.querySelector(`.page-header`);
 const tripMain = pageHeader.querySelector(`.trip-main`);
@@ -28,7 +41,9 @@ const pageBodyContainer = pageMain.querySelector(`.page-body__container`);
 const tripEvents = pageMain.querySelector(`.trip-events`);
 const eventAddButton = tripMain.querySelector(`.trip-main__event-add-btn`);
 
-const apiNetwork = new ApiNetwork(END_POINT, AUTHORIZATION);
+const api = new Api(END_POINT, AUTHORIZATION);
+const store = new Store(STORE_NAME, window.localStorage);
+const apiWithProvider = new Provider(api, store);
 
 const defaultTripTab = TripTab.TABLE;
 let currentTripTab = defaultTripTab;
@@ -41,7 +56,7 @@ const filterModel = new FilterModel();
 const eventsModel = new EventsModel();
 
 const tripHeaderPresenter = new TripHeaderPresenter(tripMain, tripFiltersHeading, filterModel, eventsModel);
-const tripPresenter = new TripPresenter(tripEvents, eventsModel, filterModel, apiNetwork);
+const tripPresenter = new TripPresenter(tripEvents, eventsModel, filterModel, apiWithProvider);
 
 const resetTripTabs = () => {
   remove(tripTabsComponent);
@@ -77,6 +92,12 @@ const eventAddClickHandler = () => {
     handleTripTabsClick(TripTab.TABLE);
   }
 
+  if (!isOnline()) {
+    toast(`You can't create new event offline`);
+
+    return;
+  }
+
   tripPresenter.addNewEvent();
 };
 
@@ -86,7 +107,7 @@ eventAddButton.addEventListener(`click`, eventAddClickHandler);
 
 tripPresenter.init();
 
-apiNetwork.getAllData()
+apiWithProvider.getAllData()
   .then((events) => {
     eventsModel.setData(UpdateType.INIT, events);
     resetTripTabs();
@@ -97,3 +118,20 @@ apiNetwork.getAllData()
     resetTripTabs();
     tripHeaderPresenter.init();
   });
+
+window.addEventListener(`load`, () => {
+  navigator.serviceWorker.register(`/sw.js`);
+});
+
+window.addEventListener(`online`, () => {
+  document.title = document.title.replace(` [offline]`, ``);
+  removeOfflineTransparent();
+  if (apiWithProvider.getIsSyncNeeded()) {
+    apiWithProvider.sync();
+  }
+});
+
+window.addEventListener(`offline`, () => {
+  document.title += ` [offline]`;
+  showOfflineTransparent(tripMain);
+});

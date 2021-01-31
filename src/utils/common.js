@@ -173,3 +173,24 @@ export const getEventTimeDatetime = (date) => dayjs(date).format(`YYYY-MM-DDTHH:
 export const getEventTimeValue = (date) => dayjs(date).format(`HH:mm`);
 
 export const getEventInputTimeValue = (date) => dayjs(date).format(`YY/MM/DD HH:mm`);
+
+export const isOnline = () => window.navigator.onLine;
+
+export const showOfflineTransparent = (container) => {
+  const transparent = document.createElement(`div`);
+
+  transparent.classList.add(`offline-transparent`);
+  transparent.textContent = `Offline`;
+  transparent.style.cssText = `color: firebrick; font-size: 44px;
+  font-weight: bold; position: fixed; left: 50%; transform: translateX(-50%)`;
+
+  container.appendChild(transparent);
+};
+
+export const removeOfflineTransparent = () => {
+  const transparent = document.querySelector(`.offline-transparent`);
+
+  if (transparent) {
+    transparent.remove();
+  }
+};
